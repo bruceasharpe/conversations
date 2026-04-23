@@ -1,0 +1,5537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elevenlabs Conversations Review v3.22.10</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0b0e;
+    --bg2: #111318;
+    --bg3: #181b22;
+    --bg4: #1e2230;
+    --border: #252a38;
+    --border2: #2e3548;
+    --accent: #6c63ff;
+    --accent2: #8b5cf6;
+    --accent-glow: rgba(108, 99, 255, 0.15);
+    --text: #e8eaf0;
+    --text2: #9ba3b8;
+    --text3: #6b7494;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #38bdf8;
+    --highlight: #f5c842;
+  }
+
+  html.light {
+    --bg: #f0f2f7;
+    --bg2: #ffffff;
+    --bg3: #f5f7fb;
+    --bg4: #e8ecf4;
+    --border: #d1d8e8;
+    --border2: #bcc5da;
+    --accent: #5b52e8;
+    --accent2: #7c3aed;
+    --accent-glow: rgba(91, 82, 232, 0.12);
+    --text: #1a1d2e;
+    --text2: #4a5068;
+    --text3: #7b84a0;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0284c7;
+    --highlight: #5b52e8;
+  }
+
+  .theme-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .theme-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* Config button */
+  .config-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .config-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* Config modal */
+  .cfg-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 8000;
+    align-items: center;
+    justify-content: center;
+  }
+  .cfg-overlay.open { display: flex; }
+  .cfg-box {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 420px;
+    max-width: calc(100vw - 40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .cfg-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cfg-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cfg-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cfg-input {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .cfg-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .cfg-hint {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .cfg-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .cfg-cancel-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .cfg-cancel-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .cfg-save-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: opacity 0.15s;
+  }
+  .cfg-save-btn:hover { opacity: 0.88; }
+
+  /* Session buttons */
+  .btn-session {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-session:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* Session modals shared */
+  .sess-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 8500;
+    align-items: center;
+    justify-content: center;
+  }
+  .sess-overlay.open { display: flex; }
+  .sess-box {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 500px;
+    max-width: calc(100vw - 40px);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+  }
+  .sess-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  /* Save session */
+  .sess-save-row {
+    display: flex;
+    gap: 8px;
+  }
+  .sess-name-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .sess-name-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .sess-do-save-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .sess-do-save-btn:hover { opacity: 0.88; }
+  /* Load session list */
+  .sess-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+  }
+  .sess-empty {
+    color: var(--text3);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+  }
+  .sess-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+  .sess-item:hover { border-color: var(--border2); }
+  .sess-item-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .sess-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sess-item-meta {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+  .sess-load-btn {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  .sess-load-btn:hover { opacity: 0.85; }
+  .sess-del-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .sess-del-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239,68,68,0.07);
+  }
+  /* confirm delete inline */
+  .sess-del-confirm {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--danger);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .sess-del-yes {
+    background: var(--danger);
+    border: none;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .sess-del-no {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .sess-close-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    align-self: flex-end;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .sess-close-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* Active session badge below header */
+  .sess-active-banner {
+    display: none;
+    background: var(--accent-glow);
+    border-bottom: 1px solid var(--accent);
+    padding: 5px 24px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    align-items: center;
+    gap: 10px;
+  }
+  .sess-active-banner.visible { display: flex; }
+  .sess-active-clear {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+  .sess-active-clear:hover { background: var(--accent); color: #fff; }
+
+  /* Show/hide toggle for sensitive config fields */
+  .cfg-field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .cfg-field-wrap .cfg-input { padding-right: 38px; }
+  .cfg-reveal-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text3);
+    padding: 2px 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .cfg-reveal-btn:hover { color: var(--accent); }
+
+  /* Playing row highlight */
+  tr.row-playing td {
+    background: rgba(108,99,255,0.08) !important;
+    border-top: 1px solid rgba(108,99,255,0.25) !important;
+    border-bottom: 1px solid rgba(108,99,255,0.25) !important;
+  }
+  tr.row-playing .play-btn {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Arial', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    flex-shrink: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    transition: box-shadow 0.2s;
+  }
+
+  header.collapsed .header-controls {
+    display: none !important;
+  }
+
+  header.collapsed .header-top {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Collapse hides controls and stats rows */
+  header.collapsed .header-stats,
+  header.collapsed .header-stats-row2 {
+    display: none !important;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0 10px;
+    border-bottom: 1px solid var(--border);
+    transition: padding 0.25s ease;
+    gap: 12px;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .logo h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .logout-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .logout-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239,68,68,0.07);
+  }
+.collapse-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .collapse-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .collapse-icon {
+    font-size: 9px;
+    transition: transform 0.25s ease;
+  }
+
+  header.collapsed .collapse-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Select mode button */
+  .select-mode-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .select-mode-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+  .select-mode-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .select-mode-btn.active:hover { opacity: 0.85; }
+
+  /* Selection toolbar that appears above table when rows selected */
+  .selection-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: var(--accent-glow);
+    border-bottom: 1px solid var(--accent);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .selection-bar.visible { display: flex; }
+  .selection-bar-label { flex: 1; }
+  .download-audio-btn {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: opacity 0.15s;
+  }
+  .download-audio-btn:hover { opacity: 0.85; }
+  .download-audio-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .sel-clear-btn {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .sel-clear-btn:hover { background: var(--accent); color: #fff; }
+
+  /* Checkbox column in table */
+  .sel-cell {
+    width: 32px;
+    padding: 0 6px !important;
+    vertical-align: middle;
+    line-height: 1;
+    text-align: center;
+  }
+  .sel-cell input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+  /* Hide checkbox column when not in select mode */
+  body:not(.select-mode) .sel-cell { display: none; }
+  /* Highlight selected rows */
+  body.select-mode tr.row-selected td { background: var(--accent-glow) !important; }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 0;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-label {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  input[type="date"], select {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="date"]:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+  }
+
+  .agent-select-wrapper {
+    position: relative;
+  }
+
+  #agentDropdown {
+    min-width: 220px;
+    max-width: 320px;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(108, 99, 255, 0.5);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg4);
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .btn-success {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .btn-success:hover {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: var(--success);
+  }
+
+  /* MAIN CONTENT */
+  main {
+    padding: 0;
+    max-width: 100%;
+    margin: 0;
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .filter-inline {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .filter-inline.visible { display: flex; }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .filter-date-input {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Arial', sans-serif;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .filter-date-input:focus { border-color: var(--accent); }
+  .filter-clear-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-clear-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .search-with-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 240px;
+    max-width: 800px;
+  }
+
+  .search-box {
+    position: relative;
+    flex: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 9px 12px 9px 38px;
+    border-radius: 8px;
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .search-box input::placeholder { color: var(--text3); }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  /* TABLE */
+  .table-container {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* Scrollable wrapper inside table-container */
+  .table-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    min-height: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg3);
+  }
+
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+
+  th:hover { color: var(--text); }
+
+  th.sorted { color: var(--accent); }
+
+  th .sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.4;
+    font-size: 10px;
+  }
+
+  th.sorted .sort-icon { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover {
+    background: var(--bg3);
+  }
+
+  tbody tr:hover td { color: var(--text); }
+
+  td {
+    padding: 12px 14px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  td.primary { color: var(--text); font-weight: 500; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-purple { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .badge-green { background: rgba(34,197,94,0.1); color: var(--success); }
+  .badge-yellow { background: rgba(245,158,11,0.1); color: var(--warning); }
+  .badge-blue { background: rgba(56,189,248,0.1); color: var(--info); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--text3);
+  }
+
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text2); }
+  .empty-state p { font-size: 14px; }
+
+  /* LOADING */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    gap: 20px;
+    color: var(--text3);
+    flex: 1;
+    min-height: 300px;
+  }
+
+  .loading-spinner-wrap {
+    position: relative;
+    width: 56px;
+    height: 56px;
+  }
+
+  .loading-spinner-wrap .spinner {
+    width: 56px;
+    height: 56px;
+    border-width: 3px;
+  }
+
+  .loading-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: -0.2px;
+  }
+
+  .loading-status {
+    font-size: 13px;
+    color: var(--text3);
+    min-width: 260px;
+    text-align: center;
+  }
+
+  .loading-progress-bar {
+    width: 260px;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .cancel-load-btn {
+    margin-top: 14px;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cancel-load-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239,68,68,0.08);
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* DETAIL MODAL */
+  /* DETAIL GRID */
+    max-height: calc(90vh - 80px);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .detail-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .detail-card .label {
+    font-size: 11px;
+    font-family: 'Arial', sans-serif;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  .detail-card .value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .transcript-container {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 4px;
+  }
+
+  .transcript-container::-webkit-scrollbar { width: 4px; }
+  .transcript-container::-webkit-scrollbar-track { background: var(--bg3); border-radius: 2px; }
+  .transcript-container::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .message-bubble {
+    padding: 10px 14px;
+    border-radius: 10px;
+    max-width: 85%;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .message-bubble.agent {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+
+  .message-bubble.user {
+    background: rgba(108, 99, 255, 0.12);
+    border: 1px solid rgba(108, 99, 255, 0.25);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+    color: var(--text);
+  }
+
+  .message-role {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    color: var(--text3);
+  }
+
+  .message-bubble.user .message-role { color: var(--accent); text-align: right; }
+
+  .raw-json {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+    font-size: 13px;
+    color: var(--text3);
+  }
+
+  .pagination-btns {
+    display: flex;
+    gap: 6px;
+  }
+
+  .page-btn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* NOTIFICATION */
+  .notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+    max-width: 360px;
+  }
+
+  .notification.show { display: flex; }
+  .notification.error { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+  .notification.success { border-color: var(--success); background: rgba(34,197,94,0.1); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* AGENT MULTI-SELECT CUSTOM */
+  .agent-multiselect {
+    position: relative;
+  }
+
+  .agent-multiselect-trigger {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 7px 32px 7px 12px;
+    border-radius: 6px;
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 220px;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .agent-multiselect-trigger:hover,
+  .agent-multiselect-trigger.open {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .agent-multiselect-trigger .chevron {
+    position: absolute;
+    right: 10px;
+    font-size: 10px;
+    color: var(--text3);
+    transition: transform 0.2s;
+    pointer-events: none;
+  }
+
+  .agent-multiselect-trigger.open .chevron { transform: rotate(180deg); }
+
+  .agent-multiselect-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 300;
+    min-width: 280px;
+    max-height: 480px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .agent-multiselect-dropdown.open { display: flex; }
+
+  #agentOptions {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .agent-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    transition: background 0.15s;
+  }
+
+  .agent-option:hover { background: var(--bg4); color: var(--text); }
+
+  .agent-option.selected { color: var(--accent); }
+
+  .agent-option input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+
+  .agent-option-all {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .agent-env-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+  }
+
+  .agent-refresh-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    color: var(--text3);
+    font-size: 12px;
+    padding: 2px 7px;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .agent-refresh-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .agent-refresh-btn.spinning .agent-refresh-icon {
+    display: inline-block;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .agent-quick-select {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .agent-qs-btn {
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 5px;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .agent-qs-btn:hover {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Active = fully inverted: accent background, white text */
+  .agent-qs-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .agent-qs-btn.active:hover {
+    opacity: 0.85;
+  }
+
+  .agent-qs-clear {
+    border-color: var(--border2);
+    color: var(--text3);
+    background: var(--bg4);
+  }
+
+  .agent-qs-clear:hover {
+    background: rgba(239,68,68,0.12) !important;
+    border-color: var(--danger) !important;
+    color: var(--danger) !important;
+  }
+
+  .agent-search-box {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .agent-search-box .agent-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .agent-search-box input {
+    width: 100%;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 5px 26px 5px 9px;
+    border-radius: 5px;
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .agent-search-box input:focus { border-color: var(--accent); }
+  .agent-search-box input::placeholder { color: var(--text3); }
+
+  .agent-search-clear {
+    position: absolute;
+    right: 7px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    display: none;
+  }
+
+  .agent-search-clear:hover { color: var(--text); }
+  .agent-search-clear.visible { display: block; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  .date-preset-btns {
+    display: flex;
+    gap: 4px;
+  }
+
+  .preset-btn {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .preset-btn:hover, .preset-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* HEADER STATS STRIP */
+  .header-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  /* header-stats-row2 sits flush below row 1 */
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+    margin-top: 0;
+  }
+
+  /* Inline tooltip on stat labels */
+  .stat-tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--border2);
+    color: var(--text3);
+    font-size: 8px;
+    font-weight: 700;
+    cursor: default;
+    margin-left: 4px;
+    vertical-align: middle;
+    position: relative;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .stat-tip:hover { background: var(--accent); color: #fff; }
+
+  .stat-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 9999;
+  }
+
+  .stat-tip:hover::after { opacity: 1; }
+
+  .hstat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 4px 18px 4px 0;
+    margin-right: 18px;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    min-width: 100px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .hstat:last-child {
+    border-right: none;
+    margin-right: 0;
+  }
+
+  .hstat-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .hstat-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .hstat-sub {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 1px;
+  }
+
+  .hstat-toggle-wrap {
+    margin-left: auto;
+    margin-right: 0;
+    padding-right: 0;
+    border-right: none;
+    min-width: unset;
+    justify-content: center;
+    align-self: center;
+  }
+
+  .stats-toggle-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .stats-toggle-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .stats-toggle-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* SEARCH CLEAR BTN */
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: none;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .search-clear:hover { color: var(--text); }
+  .search-clear.visible { display: block; }
+
+  /* Adjust search input when clear btn present */
+  .search-box input { padding-right: 32px; }
+
+  /* CLICKABLE CONVERSATION ID CELL */
+  .conv-id-cell {
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .conv-id-cell:hover {
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .copy-hint {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 11px;
+    color: var(--text3);
+    opacity: 0;
+    transition: opacity 0.15s;
+    vertical-align: middle;
+  }
+
+  .conv-id-cell:hover .copy-hint {
+    opacity: 1;
+  }
+
+  /* PLAY BUTTON */
+  .play-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    max-width: 26px;
+    max-height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    padding: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .play-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+  .play-btn.loading {
+    border-color: var(--accent);
+    color: transparent;
+    background: none;
+    position: relative;
+    cursor: wait;
+  }
+  .play-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  .play-btn.no-audio {
+    opacity: 0.25;
+    cursor: not-allowed;
+    font-size: 12px;
+  }
+  .play-btn.no-audio:hover {
+    border-color: var(--border2);
+    color: var(--text3);
+    background: none;
+  }
+  td.play-cell {
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+    padding: 0 8px 0 12px;
+    white-space: nowrap;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  th.play-col {
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+    padding: 12px 8px 12px 12px;
+  }
+
+  /* AUDIO MODAL */
+  .audio-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px 16px;
+    overflow-y: auto;
+  }
+  .audio-modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 0;
+    width: 100%;
+    max-width: 620px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+  .audio-modal-top {
+    padding: 20px 22px 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .audio-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .audio-modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .audio-modal-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+  .audio-modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .audio-modal-close:hover { color: var(--text); }
+
+  /* Timeline */
+  .audio-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .audio-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text3);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Timeline track — tall enough for thumb, overflow hidden prevents bleed */
+  .audio-timeline-track {
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .audio-timeline-bg {
+    position: absolute;
+    left: 0; right: 0;
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+  }
+  .audio-timeline-fill {
+    position: absolute;
+    left: 0;
+    height: 4px;
+    width: 0%;
+    max-width: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .audio-slider {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+  }
+
+  /* Controls */
+  .audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .audio-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    min-width: 42px;
+    height: 38px;
+  }
+  .audio-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+  .audio-btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-color: transparent;
+    min-width: 52px;
+  }
+  .audio-btn.primary:hover { opacity: 0.85; }
+  .audio-volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .audio-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 72px;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .audio-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text2);
+    cursor: pointer;
+  }
+  .audio-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text2);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Summary section — fixed below player, does NOT scroll with transcript */
+  .audio-summary {
+    flex-shrink: 0;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .audio-summary::-webkit-scrollbar { width: 4px; }
+  .audio-summary::-webkit-scrollbar-track { background: transparent; }
+  .audio-summary::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .audio-summary-heading {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .audio-summary-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .audio-summary-empty {
+    font-size: 12px;
+    color: var(--text3);
+    font-style: italic;
+  }
+
+  /* Transcript chat area — scrollable, fills remaining space */
+  .audio-transcript {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;  /* critical: allows flex child to shrink below content size */
+  }
+  .audio-transcript::-webkit-scrollbar { width: 4px; }
+  .audio-transcript::-webkit-scrollbar-track { background: var(--bg3); border-radius: 2px; }
+  .audio-transcript::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .audio-transcript-heading {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+  .chat-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-bubble-wrap.agent-wrap { align-items: flex-start; }
+  .chat-bubble-wrap.user-wrap  { align-items: flex-end; }
+  .chat-bubble-wrap.tool-wrap  { align-items: center; }
+  .chat-bubble {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .chat-bubble:hover { opacity: 0.85; }
+  /* Agent — left, slate */
+  .chat-bubble.agent {
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-bottom-left-radius: 3px;
+  }
+  /* User/Caller — right, accent purple */
+  .chat-bubble.user {
+    background: var(--accent-glow);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    color: var(--text);
+    border-bottom-right-radius: 3px;
+  }
+  /* Tool call — centered, amber tint */
+  .chat-bubble.tool-call {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: var(--text2);
+    max-width: 92%;
+    width: 92%;
+    border-radius: 8px;
+    cursor: default;
+  }
+  .chat-bubble.tool-call:hover { opacity: 1; }
+  /* Tool result — centered, green tint */
+  .chat-bubble.tool-result {
+    background: rgba(34, 197, 94, 0.07);
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    color: var(--text2);
+    max-width: 92%;
+    width: 92%;
+    border-radius: 8px;
+    cursor: default;
+  }
+  .chat-bubble.tool-result:hover { opacity: 1; }
+  .chat-role {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+    color: var(--text3);
+  }
+  .chat-bubble.user .chat-role  { color: var(--accent); }
+  .chat-bubble.tool-call .chat-role   { color: var(--warning); }
+  .chat-bubble.tool-result .chat-role { color: var(--success); }
+  .tool-name {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .tool-body {
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    color: var(--text3);
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .chat-time {
+    font-size: 10px;
+    color: var(--text3);
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+  .chat-bubble-wrap.agent-wrap .chat-time { text-align: left; }
+  .chat-bubble-wrap.user-wrap  .chat-time { text-align: right; }
+  .chat-bubble-wrap.tool-wrap  .chat-time { text-align: center; }
+  /* Active/highlighted bubble during playback */
+  .chat-bubble.active-bubble {
+    outline: 2px solid var(--accent);
+    opacity: 1 !important;
+  }
+
+  /* YELLOW HIGHLIGHT — data columns and header stats */
+  .col-yellow { color: var(--highlight) !important; font-weight: 600; }
+  .stat-yellow { color: var(--highlight) !important; }
+
+  /* CSV POPUP MENU */
+  .csv-popup-wrapper {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .csv-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    min-width: 230px;
+    z-index: 500;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    animation: popupIn 0.15s ease;
+  }
+
+  .csv-popup.open { display: flex; }
+
+  @keyframes popupIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .csv-popup-header {
+    padding: 10px 14px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .csv-popup-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 14px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Arial', sans-serif;
+  }
+
+  .csv-popup-item:last-child { border-bottom: none; }
+  .csv-popup-item:hover { background: var(--bg4); }
+  .csv-popup-item.cancel:hover { background: rgba(239,68,68,0.07); }
+
+  .csv-popup-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .csv-popup-text { flex: 1; }
+  .csv-popup-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .csv-popup-desc { font-size: 11px; color: var(--text3); line-height: 1.4; }
+  .csv-popup-item.cancel .csv-popup-title { color: var(--danger); }
+
+  /* COLUMN HEADER TOOLTIP */
+  .th-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+  }
+
+  .th-tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--border2);
+    color: var(--text3);
+    font-size: 9px;
+    font-weight: 700;
+    cursor: default;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+
+  .th-tip:hover { background: var(--accent); color: #fff; }
+
+  .th-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 200;
+    max-width: 260px;
+    white-space: normal;
+    width: max-content;
+    text-align: left;
+  }
+
+  .th-tip:hover::after { opacity: 1; }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+    padding: 0 24px;
+    background: var(--bg);
+  }
+
+  .tab-btn {
+    padding: 8px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text3);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+    letter-spacing: 0.2px;
+  }
+
+  .tab-btn:hover { color: var(--text2); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 24px 16px;
+  }
+
+  .tab-panel.active {
+    display: flex;
+  }
+
+  /* SUMMARY TABLE */
+  .summary-table th { background: var(--bg3); }
+
+  /* PASSWORD MODAL */
+  /* File:// CORS warning banner */
+  .cors-warning {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 99999;
+    background: #b91c1c;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.7;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  }
+  .cors-warning.visible { display: block; }
+  .cors-warning strong { font-size: 14px; font-family: Arial, sans-serif; }
+  .cors-warning code {
+    background: rgba(0,0,0,0.3);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 12px;
+    user-select: all;
+  }
+  .cors-warning-close {
+    float: right; cursor: pointer; font-size: 20px;
+    line-height: 1; opacity: 0.8; background: none;
+    border: none; color: #fff; padding: 0 4px;
+  }
+  .cors-warning-close:hover { opacity: 1; }
+
+  .pw-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pw-box {
+    background: #111318;
+    border: 1px solid #2e3548;
+    border-radius: 16px;
+    padding: 36px 40px;
+    width: 340px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    animation: modalIn 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .pw-logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+
+  .pw-title { font-size: 15px; font-weight: 700; color: #e8eaf0; text-align: center; }
+
+  .pw-input-wrap { width: 100%; }
+
+  .pw-input-wrap input {
+    width: 100%;
+    background: #1e2230;
+    border: 1px solid #2e3548;
+    border-radius: 8px;
+    color: #e8eaf0;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-family: 'Arial', sans-serif;
+    outline: none;
+    letter-spacing: 3px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .pw-input-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .pw-error {
+    font-size: 12px;
+    color: #ef4444;
+    text-align: center;
+    min-height: 14px;
+  }
+
+  .pw-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .pw-btn:hover { opacity: 0.88; }
+  .pw-btn:active { transform: scale(0.98); }
+
+  @keyframes pwShake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-8px); }
+    40%       { transform: translateX(8px); }
+    60%       { transform: translateX(-6px); }
+    80%       { transform: translateX(6px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div class="cors-warning" id="corsWarning">
+  <button class="cors-warning-close" onclick="document.getElementById('corsWarning').classList.remove('visible')">✕</button>
+  <strong>⚠ CORS Error — App must be served from a local web server, not opened as a file.</strong><br>
+  Open a terminal in the folder containing this file and run one of these commands, then open the URL shown:<br>
+  &nbsp;&nbsp;Python: &nbsp;<code>python3 -m http.server 8765</code> &nbsp;→ open <code>http://localhost:8765/' + location.pathname.split('/').pop() + '</code><br>
+  &nbsp;&nbsp;Node: &nbsp;&nbsp;<code>npx serve .</code> &nbsp;→ open the URL it shows<br>
+  &nbsp;&nbsp;VS Code: install the <code>Live Server</code> extension and click <em>Go Live</em>.
+</div>
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div id="corsBlockScreen" style="display:none;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">⚠️</div>
+      <div style="font-size:15px;font-weight:700;color:#ef4444;margin-bottom:10px;">File opened directly — API calls will fail</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;text-align:left;margin-bottom:16px;">
+        The app is running from <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">file://</code> which browsers block from making API requests (CORS policy).<br><br>
+        <strong>Fix:</strong> Put <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">start-server.py</code> in the same folder as this file, then run:<br><br>
+        <code style="display:block;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:6px;font-size:11px;margin:4px 0;">python3 start-server.py</code>
+        Then open the <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">http://localhost:8765/</code> URL it shows.<br><br>
+        <span style="color:var(--text3);font-size:11px;">Alternatively: <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">python3 -m http.server 8765</code> in the same folder.</span>
+      </div>
+      <button class="pw-btn" style="background:#374151;width:100%;font-size:12px;" onclick="document.getElementById('corsBlockScreen').style.display='none';document.getElementById('pwLoginScreen').style.display='';">
+        Continue anyway (API calls may fail)
+      </button>
+    </div>
+    <div id="pwLoginScreen">
+      <div class="pw-logo">🔒</div>
+      <div class="pw-title">Enter password to use</div>
+      <div class="pw-input-wrap">
+        <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+      </div>
+      <div class="pw-error" id="pwError"></div>
+      <button class="pw-btn" onclick="checkPassword()">OK</button>
+    </div>
+  </div>
+</div>
+
+<header id="appHeader">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🎙️</div>
+      <h1>Elevenlabs Conversations Review</h1>
+      <span id="versionBadge" style="font-size:20px;font-weight:600;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;letter-spacing:0.3px;margin-left:4px;">v3.22.10</span>
+    </div>
+    <div class="header-right">
+      <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode">☀️ Light mode?</button>
+      <button class="config-btn" onclick="openConfig()" title="App settings">⚙️ Config</button>
+      <button class="collapse-btn" id="collapseHeaderBtn" onclick="toggleHeader()" title="Collapse/expand header" style="display:none;">
+        <span class="collapse-icon">▲</span>
+        <span id="collapseLabel">Collapse Header</span>
+      </button>
+      <button class="logout-btn" onclick="logout()" title="Log out">🔒 Logout</button>
+    </div>
+  </div>
+
+  <div class="header-controls">
+    <!-- Date Range -->
+    <div class="control-group">
+      <span class="control-label">From</span>
+      <input type="date" id="dateFrom">
+    </div>
+    <div class="control-group">
+      <span class="control-label">To</span>
+      <input type="date" id="dateTo">
+    </div>
+    <div class="date-preset-btns">
+      <button class="preset-btn active" onclick="setPreset('today',this)">Today</button>
+      <button class="preset-btn" onclick="setPreset('7d',this)">7D</button>
+      <button class="preset-btn" onclick="setPreset('30d',this)">30D</button>
+    </div>
+
+    <!-- Agent Multi-Select -->
+    <div class="control-group">
+      <span class="control-label">Agents</span>
+      <div class="agent-multiselect" id="agentMultiselect">
+        <div class="agent-multiselect-trigger" id="agentTrigger" onclick="toggleAgentDropdown()">
+          <span id="agentTriggerText">Loading agents...</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="agent-multiselect-dropdown" id="agentDropdownList">
+          <div class="agent-option-all">
+            <span class="agent-env-label">Select Environment or individually</span>
+            <button class="agent-refresh-btn" id="agentRefreshBtn" onclick="refreshAgents(event)" title="Refresh agent list">
+              <span class="agent-refresh-icon">↻</span> Refresh
+            </button>
+          </div>
+          <div class="agent-quick-select">
+            <button class="agent-qs-btn" data-group="prod" onclick="selectByPrefix('prod', event)">Prod</button>
+            <button class="agent-qs-btn" data-group="staging" onclick="selectByPrefix('staging', event)">Staging</button>
+            <button class="agent-qs-btn" data-group="dev" onclick="selectByPrefix('dev', event)">Dev</button>
+            <button class="agent-qs-btn" data-group="demo" onclick="selectByPrefix('demo', event)">Demo</button>
+            <button class="agent-qs-btn" data-group="other" onclick="selectByPrefix('other', event)">Other</button>
+            <button class="agent-qs-btn agent-qs-clear" onclick="clearAgentSelection(event)" title="Clear all selected agents and data">✕ Clear</button>
+          </div>
+          <div class="agent-search-box">
+            <div class="agent-search-wrap">
+              <input type="text" id="agentSearch" placeholder="Search agents..." oninput="filterAgentList()" onclick="event.stopPropagation()">
+              <button class="agent-search-clear" id="agentSearchClear" onclick="clearAgentSearch(event)" title="Clear search">✕</button>
+            </div>
+          </div>
+          <div id="agentOptions"></div>
+          <div style="border-top:1px solid var(--border2);padding:8px 10px 4px;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text2);">
+              <input type="checkbox" id="includeUnknownAgents" onchange="saveUnknownAgentPref()" style="cursor:pointer;">
+              <span>Include Unknown Agents</span>
+            </label>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;">Fetches all conversations and surfaces any agents not in this list.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load & Download -->
+    <button class="btn btn-primary" onclick="loadConversations()">
+      🔄 Load Conversations
+    </button>
+    <div class="csv-popup-wrapper" id="csvPopupWrapper">
+      <button class="btn btn-success" onclick="toggleCsvPopup(event)">
+        ⬇ Download CSV ▾
+      </button>
+      <div class="csv-popup" id="csvPopup">
+        <div class="csv-popup-header">
+          Download Options
+          <div style="font-size:10px;font-weight:400;color:var(--text3);margin-top:3px;text-transform:none;letter-spacing:0;">Download file(s) to run other offline analysis</div>
+        </div>
+        <button class="csv-popup-item" onclick="downloadBasicCSV()">
+          <span class="csv-popup-icon">📄</span>
+          <span class="csv-popup-text">
+            <span class="csv-popup-title">Detail</span>
+            <span class="csv-popup-desc">Export the Detail tab list view</span>
+          </span>
+        </button>
+        <button class="csv-popup-item" onclick="downloadFullCSV()">
+          <span class="csv-popup-icon">📊</span>
+          <span class="csv-popup-text">
+            <span class="csv-popup-title">Summary</span>
+            <span class="csv-popup-desc">Export the Summary tab agent totals</span>
+          </span>
+        </button>
+        <button class="csv-popup-item cancel" onclick="closeCsvPopup()">
+          <span class="csv-popup-icon">✕</span>
+          <span class="csv-popup-text">
+            <span class="csv-popup-title">Cancel</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Session buttons -->
+    <button class="btn btn-session" id="saveSearchBtn" onclick="openSaveSession()" title="Save current search as a JSON file" style="display:none;">💾 Save Search</button>
+    <button class="btn btn-session" onclick="openLoadSession()" title="Import a saved search JSON file">📂 Load Search</button>
+  </div>
+
+  <!-- Header Stats Strip -->
+  <div class="header-stats" id="headerStats" style="display:none;">
+    <!-- Row 1 -->
+    <div class="hstat">
+      <div class="hstat-label">Conversations</div>
+      <div class="hstat-value stat-yellow" id="statTotal">0</div>
+      <div class="hstat-sub" id="statTotalSub"></div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Total Duration</div>
+      <div class="hstat-value stat-yellow" id="statTotalDuration">—</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Avg Duration</div>
+      <div class="hstat-value stat-yellow" id="statAvgDuration">—</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">
+        Total Agent Cost
+        <span class="stat-tip" data-tip="formula= ($0.065 × duration in mins) + Total LLM Cost">?</span>
+      </div>
+      <div class="hstat-value stat-yellow" id="statAgentCost">$0.00</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Total Messages</div>
+      <div class="hstat-value" id="statMessages">0</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Total Call Credits</div>
+      <div class="hstat-value stat-yellow" id="statCost">0</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Total LLM Credits</div>
+      <div class="hstat-value stat-yellow" id="statCredits">0</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Total LLM Cost</div>
+      <div class="hstat-value stat-yellow" id="statLLM">$0.000000</div>
+    </div>
+  </div>
+  <!-- Row 2: Average stats — always shown with row 1 -->
+  <div class="header-stats header-stats-row2" id="headerStatsRow2" style="display:none;">
+    <div class="hstat">
+      <div class="hstat-label">Avg Duration</div>
+      <div class="hstat-value stat-yellow" id="statAvgDurRow2">—</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Avg LLM $</div>
+      <div class="hstat-value stat-yellow" id="statAvgLLMCost">—</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Avg Messages</div>
+      <div class="hstat-value stat-yellow" id="statAvgMessages">—</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">
+        Avg LLM $/Min
+        <span class="stat-tip" data-tip="formula= LLM Total / Duration">?</span>
+      </div>
+      <div class="hstat-value stat-yellow" id="statAvgLLMPerMin">—</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Active session banner -->
+  <div class="sess-active-banner" id="sessActiveBanner">
+    <span>📂 Search loaded: <strong id="sessActiveName"></strong></span>
+    <button class="sess-active-clear" onclick="clearSession()">✕ Clear</button>
+  </div>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-with-count">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search all columns..." oninput="applyFilters()">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear search">✕</button>
+      </div>
+      <div class="filter-inline" id="filterInline">
+        <span class="filter-label" style="font-size:11px;">Date:</span>
+        <input type="date" class="filter-date-input" id="filterFrom" onchange="applyFilters()" title="From date">
+        <span style="font-size:11px;color:var(--text3);">–</span>
+        <input type="date" class="filter-date-input" id="filterTo" onchange="applyFilters()" title="To date">
+        <button class="filter-clear-btn" onclick="clearFilterDates()" title="Clear date range">✕</button>
+        <span style="font-size:11px;color:var(--text3);" id="filterRowCount"></span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);white-space:nowrap;" id="resultCount"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()" title="Select conversations to download audio" style="display:none;">☑ Select Conversations</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabDetail" onclick="switchTab('detail')">Detail</button>
+    <button class="tab-btn" id="tabSummary" onclick="switchTab('summary')">Summary</button>
+  </div>
+
+  <!-- Detail Tab -->
+  <div class="tab-panel active" id="panelDetail">
+    <div class="selection-bar" id="selectionBar">
+      <span class="selection-bar-label" id="selectionBarLabel">0 conversations selected</span>
+      <button class="sel-clear-btn" onclick="clearSelection()">Clear</button>
+      <button class="download-audio-btn" id="downloadAudioBtn" onclick="downloadSelectedAudio()" disabled>⬇ Download Audio</button>
+    </div>
+    <div class="table-container">
+      <div class="table-scroll" id="tableContent">
+        <div class="empty-state">
+          <div class="empty-icon">💬</div>
+          <h3>No conversations loaded</h3>
+          <p>Select your filters above and click "Load Conversations"</p>
+        </div>
+      </div>
+      <div id="paginationBar" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Summary Tab -->
+  <div class="tab-panel" id="panelSummary">
+    <div class="table-container">
+      <div class="table-scroll" id="summaryContent">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <h3>No data loaded</h3>
+          <p>Load conversations to see agent summary</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+  <span id="notificationIcon">ℹ️</span>
+  <span id="notificationText"></span>
+</div>
+
+<script>
+let API_KEY = 'f522c4ab122359ba47c35219bac718560ff0562a771cb94a423706bf36b64754';
+const BASE = 'https://api.elevenlabs.io';
+// Runtime-overridable settings (loaded from localStorage on init)
+let APP_PASSWORD = 'Humach2026!';
+let APP_NAME     = 'Elevenlabs Conversations Review';
+
+let allConversations = [];
+let filteredConversations = [];
+let agents = [];
+let originalAgents = []; // agents from the API only — never includes ghost/discovered agents
+let selectedAgentIds = [];
+let sortCol = 0;
+let sortDir = 1;
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+// Helper: sum all model values for a given path inside metadata.charging.llm_usage.irreversible_generation.model_usage.*
+function getLLMSum(conv, field) {
+  try {
+    const modelUsage = conv.metadata?.charging?.llm_usage?.irreversible_generation?.model_usage;
+    if (!modelUsage || typeof modelUsage !== 'object') return null;
+    let total = 0; let found = false;
+    Object.values(modelUsage).forEach(m => {
+      const parts = field.split('.');
+      let val = m;
+      for (const p of parts) { val = val?.[p]; }
+      if (val != null && !isNaN(val)) { total += Number(val); found = true; }
+    });
+    return found ? total : null;
+  } catch { return null; }
+}
+
+function getCallCost(conv) {
+  const v = conv.metadata?.cost;
+  return v != null ? Number(v) : null;
+}
+
+const COLS = [
+  { key: 'start_time_unix_secs', label: 'Date & Time', fmt: fmtDateTime, sortVal: c => c.start_time_unix_secs },
+  { key: 'agent_name', label: 'DVA Agent', tip: 'Name of the DVA', fmt: v => v || '<span style="color:var(--text3);font-style:italic;">Unknown Agent</span>', sortVal: c => c.agent_name || 'zzz' },
+  { key: 'conversation_id', label: 'Conversation ID', fmt: (v, c) => v || '—', sortVal: c => c.conversation_id },
+  { key: 'call_duration_secs', label: 'Dur Hours', tip: 'The duration of the DVA conversation (HH:MM:SS)', fmt: fmtDuration, sortVal: c => c.call_duration_secs, yellow: true },
+  { key: '_dur_mins', label: 'Dur Min', tip: 'Duration expressed as total minutes', fmt: (v, c) => fmtDurMins(c.call_duration_secs), sortVal: c => c.call_duration_secs, yellow: true },
+  { key: 'message_count', label: 'Messages', tip: 'The number of messages within the DVA conversation, to/from LLM', fmt: v => v ?? '—', sortVal: c => c.message_count },
+  { key: '_call_credits', label: 'Call Credits', tip: 'The number of credits used for the DVA (without LLM)', fmt: (v, c) => { const x = c.metadata?.cost; return x != null ? Math.round(Number(x)).toLocaleString() : '—'; }, sortVal: c => c.metadata?.cost, yellow: true },
+  { key: '_llm_credits', label: 'LLM Credits', tip: 'Calculated cost per min for the DVA LLM', fmt: (v, c) => { const x = c.metadata?.charging?.llm_charge; return x != null ? Math.round(Number(x)).toLocaleString() : '—'; }, sortVal: c => c.metadata?.charging?.llm_charge, yellow: true },
+  { key: '_llm_total', label: 'LLM Total', tip: 'The total cost for DVA LLM use of the conversation', fmt: (v, c) => { const x = c.metadata?.charging?.llm_price; return x != null ? '$' + Number(x).toFixed(4) : '—'; }, sortVal: c => c.metadata?.charging?.llm_price, yellow: true },
+  { key: '_llm_model', label: 'LLM Used', fmt: (v, c) => {
+    const mu = c.metadata?.charging?.llm_usage?.initiated_generation?.model_usage;
+    if (!mu || typeof mu !== 'object') return '—';
+    const models = Object.keys(mu);
+    return models.length ? models.join(', ') : '—';
+  }, sortVal: c => {
+    const mu = c.metadata?.charging?.llm_usage?.initiated_generation?.model_usage;
+    return mu ? Object.keys(mu).join(',') : '';
+  }},
+];
+
+function fmtDateTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtDuration(secs) {
+  if (secs == null) return '—';
+  const totalSecs = Math.round(secs);
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = totalSecs % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtDurMins(secs) {
+  if (secs == null) return '—';
+  return (Math.round(secs) / 60).toFixed(1);
+}
+
+function localToday() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// Date presets
+function setPreset(preset, btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const todayStr = localToday();
+  let from;
+  if (preset === 'today') {
+    from = todayStr;
+  } else if (preset === '7d') {
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dy = String(d.getDate()).padStart(2,'0');
+    from = `${y}-${m}-${dy}`;
+  } else if (preset === '30d') {
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dy = String(d.getDate()).padStart(2,'0');
+    from = `${y}-${m}-${dy}`;
+  } else {
+    from = '2020-01-01';
+  }
+  document.getElementById('dateFrom').value = from;
+  document.getElementById('dateTo').value = todayStr;
+}
+
+// Init dates to today
+(function initDates() {
+  const todayStr = localToday();
+  document.getElementById('dateFrom').value = todayStr;
+  document.getElementById('dateTo').value = todayStr;
+})();
+
+// Agent multi-select
+function toggleAgentDropdown() {
+  const trigger = document.getElementById('agentTrigger');
+  const dropdown = document.getElementById('agentDropdownList');
+  trigger.classList.toggle('open');
+  dropdown.classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  const ms = document.getElementById('agentMultiselect');
+  if (!ms.contains(e.target)) {
+    document.getElementById('agentTrigger').classList.remove('open');
+    document.getElementById('agentDropdownList').classList.remove('open');
+    const searchEl = document.getElementById('agentSearch');
+    if (searchEl) searchEl.value = '';
+    document.getElementById('agentSearchClear')?.classList.remove('visible');
+    activeGroups.clear();
+    document.querySelectorAll('#agentOptions .agent-option').forEach(div => { div.style.display = ''; });
+  }
+});
+
+// Returns the set of agent IDs matching a named group
+function agentsForGroup(group) {
+  const prefixes = ['prod', 'staging', 'dev', 'demo'];
+  return agents.filter(a => {
+    const n = (a.name || '').toLowerCase();
+    if (group === 'other') return !prefixes.some(p => n.startsWith(p));
+    return n.startsWith(group);
+  }).map(a => a.agent_id);
+}
+
+// Returns true if ALL agents in the group are currently selected
+function isGroupSelected(group) {
+  const ids = agentsForGroup(group);
+  if (ids.length === 0) return false;
+  return ids.every(id => !selectedAgentIds.includes(id));
+}
+
+// Sync button highlight states based on current selection
+function syncQsBtnStates() {
+  document.querySelectorAll('.agent-qs-btn[data-group]').forEach(btn => {
+    const group = btn.dataset.group;
+    btn.classList.toggle('active', isGroupSelected(group));
+  });
+}
+
+// Tracks which quick-select groups are currently used as list filter
+const activeGroups = new Set();
+
+// Single source of truth for what's visible in the agent dropdown list.
+// Applies BOTH active group filter and text search — an agent must pass both.
+function applyVisibleFilter() {
+  const q = document.getElementById('agentSearch').value.toLowerCase().trim();
+  document.getElementById('agentSearchClear').classList.toggle('visible', q.length > 0);
+
+  const groupFilterActive = activeGroups.size > 0;
+  const groupIds = new Set();
+  if (groupFilterActive) {
+    activeGroups.forEach(g => agentsForGroup(g).forEach(id => groupIds.add(id)));
+  }
+
+  document.querySelectorAll('#agentOptions .agent-option').forEach(div => {
+    const name = div.dataset.agentName || '';
+    const inGroup = !groupFilterActive || groupIds.has(div.dataset.agentId);
+    const matchesSearch = !q || name.includes(q);
+
+    if (groupFilterActive) {
+      // Group buttons active: show agents in group OR matching search (additive)
+      div.style.display = (inGroup || (q && name.includes(q))) ? '' : 'none';
+    } else {
+      // No group filter: show all agents, filtered by search text only
+      div.style.display = matchesSearch ? '' : 'none';
+    }
+  });
+}
+
+function applyGroupFilter() {
+  applyVisibleFilter();
+}
+
+function filterAgentList() {
+  applyVisibleFilter();
+}
+
+function selectByPrefix(group, event) {
+  event.stopPropagation();
+  const groupIds = agentsForGroup(group);
+  if (groupIds.length === 0) return;
+
+  if (isGroupSelected(group)) {
+    // Deselect this group
+    groupIds.forEach(id => {
+      if (!selectedAgentIds.includes(id)) selectedAgentIds.push(id);
+    });
+    document.querySelectorAll('.agent-chk').forEach(chk => {
+      if (groupIds.includes(chk.dataset.agentId)) chk.checked = false;
+    });
+  } else {
+    // Select this group
+    groupIds.forEach(id => {
+      const idx = selectedAgentIds.indexOf(id);
+      if (idx !== -1) selectedAgentIds.splice(idx, 1);
+    });
+    document.querySelectorAll('.agent-chk').forEach(chk => {
+      if (groupIds.includes(chk.dataset.agentId)) chk.checked = true;
+    });
+  }
+
+  // Toggle this group in the active filter set
+  if (activeGroups.has(group)) activeGroups.delete(group);
+  else activeGroups.add(group);
+
+  applyGroupFilter();
+  syncQsBtnStates();
+  updateAgentTriggerText();
+}
+
+function clearAgentSelection(event) {
+  event.stopPropagation();
+
+  // Deselect all agents
+  selectedAgentIds = agents.map(a => a.agent_id);
+  document.querySelectorAll('.agent-chk').forEach(chk => { chk.checked = false; });
+  activeGroups.clear();
+  syncQsBtnStates();
+  updateAgentTriggerText();
+
+  // Show full unfiltered agent list
+  document.querySelectorAll('#agentOptions .agent-option').forEach(div => {
+    div.style.display = '';
+  });
+  const searchEl = document.getElementById('agentSearch');
+  if (searchEl) searchEl.value = '';
+  document.getElementById('agentSearchClear').classList.remove('visible');
+
+  // Clear all loaded conversation data and reset UI
+  allConversations = [];
+  filteredConversations = [];
+  currentPage = 1;
+
+  setTableEmpty('Select agents and click Load Conversations');
+  document.getElementById('resultCount').textContent = '';
+  document.getElementById('headerStats').style.display = 'none';
+  document.getElementById('headerStatsRow2').style.display = 'none';
+
+  // Reset summary tab
+  document.getElementById('summaryContent').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>No data loaded</h3>
+      <p>Load conversations to see agent summary</p>
+    </div>`;
+}
+
+function toggleAgent(id, chkEl) {
+  if (chkEl.checked) {
+    const idx = selectedAgentIds.indexOf(id);
+    if (idx !== -1) selectedAgentIds.splice(idx, 1);
+  } else {
+    if (!selectedAgentIds.includes(id)) selectedAgentIds.push(id);
+  }
+  syncQsBtnStates();
+  updateAgentTriggerText();
+}
+
+function updateAgentTriggerText() {
+  const el = document.getElementById('agentTriggerText');
+  const excluded = selectedAgentIds.length;
+  const total = agents.length;
+  if (excluded === 0) {
+    el.textContent = 'All Agents';
+  } else if (excluded === total) {
+    el.textContent = 'No agents selected';
+  } else {
+    const selected = total - excluded;
+    el.textContent = selected === 1
+      ? agents.find(a => !selectedAgentIds.includes(a.agent_id))?.name || '1 agent'
+      : `${selected} of ${total} agents`;
+  }
+}
+
+async function apiGet(path) {
+  const res = await fetch(BASE + path, {
+    headers: { 'xi-api-key': API_KEY }
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// Fetches all agents across all pages using cursor-based pagination.
+// Calls onProgress(fetched, label) after each page so status can update.
+async function fetchAllAgents(onProgress) {
+  const all = [];
+  let cursor = null;
+  let page = 0;
+  do {
+    page++;
+    const url = '/v1/convai/agents?page_size=100' + (cursor ? `&cursor=${encodeURIComponent(cursor)}` : '');
+    const data = await apiGet(url);
+    const batch = data.agents || [];
+    all.push(...batch);
+    if (onProgress) onProgress(all.length, `page ${page}`);
+    cursor = data.has_more ? data.next_cursor : null;
+  } while (cursor);
+  return all;
+}
+
+async function refreshAgents(event) {
+  event.stopPropagation();
+  const btn = document.getElementById('agentRefreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+
+  // Remember which agent IDs were selected before refresh
+  const prevSelected = agents
+    .filter(a => !selectedAgentIds.includes(a.agent_id))
+    .map(a => a.agent_id);
+
+  try {
+    const fetched = await fetchAllAgents((count, label) =>
+      setStatus(`Refreshing agents… ${count} fetched (${label})`, true)
+    );
+    agents = fetched;
+    agents.sort((a, b) => (a.name || a.agent_id).localeCompare(b.name || b.agent_id));
+    originalAgents = [...agents]; // re-snapshot after refresh — previously selected agents stay selected,
+    // any brand-new agents default to unselected (excluded)
+    const prevSet = new Set(prevSelected);
+    selectedAgentIds = agents
+      .filter(a => !prevSet.has(a.agent_id))
+      .map(a => a.agent_id);
+
+    renderAgentOptions(agents, id => !selectedAgentIds.includes(id));
+    syncQsBtnStates();
+    updateAgentTriggerText();
+    filterAgentList();
+    setStatus('Ready', false);
+    showNotification(`Agent list refreshed — ${agents.length} agent${agents.length !== 1 ? 's' : ''}`, 'success');
+  } catch(e) {
+    setStatus('Error', false);
+    showNotification('Could not refresh agents: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+  }
+}
+
+async function loadAgents() {
+  try {
+    setStatus('Loading agents…', true);
+    const fetched = await fetchAllAgents((count, label) =>
+      setStatus(`Loading agents… ${count} fetched (${label})`, true)
+    );
+    agents = fetched;
+    agents.sort((a, b) => (a.name || a.agent_id).localeCompare(b.name || b.agent_id));
+    originalAgents = [...agents]; // snapshot of real API agents — never includes ghosts
+
+    // Default: all agents excluded (none selected)
+    selectedAgentIds = agents.map(a => a.agent_id);
+
+    renderAgentOptions(agents, () => false);
+    document.getElementById('agentTriggerText').textContent = 'No agents selected';
+    setStatus('Ready', false);
+  } catch(e) {
+    document.getElementById('agentTriggerText').textContent = 'Error loading agents';
+    setStatus('Error', false);
+    showNotification('Could not load agents: ' + e.message, 'error');
+  }
+}
+
+// Renders agent checkboxes into #agentOptions.
+// isChecked(agent_id) → bool controls initial checked state.
+function renderAgentOptions(agentList, isChecked) {
+  const container = document.getElementById('agentOptions');
+  container.innerHTML = '';
+  agentList.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'agent-option';
+    div.dataset.agentId = a.agent_id;
+    div.dataset.agentName = (a.name || a.agent_id).toLowerCase();
+    const chkId = `ag_${a.agent_id}`;
+    const checked = isChecked(a.agent_id);
+    div.innerHTML = `<input type="checkbox" class="agent-chk" id="${chkId}" data-agent-id="${a.agent_id}" ${checked ? 'checked' : ''} onchange="toggleAgent('${a.agent_id}', this)">
+      <label for="${chkId}" style="cursor:pointer;flex:1;">${a.name || a.agent_id}</label>`;
+    container.appendChild(div);
+  });
+}
+
+// After loading conversations, find any agent_id values not in the known agents roster
+// and add them as "Unknown (id)" ghost entries so they appear in the selector and summary.
+function saveUnknownAgentPref() {
+  const checked = document.getElementById('includeUnknownAgents')?.checked;
+  try { localStorage.setItem('elIncludeUnknown', checked ? '1' : '0'); } catch(e) {}
+}
+
+function discoverUnknownAgents(convList) {
+  const knownIds = new Set(agents.map(a => a.agent_id));
+  const discovered = new Map(); // agent_id -> best available name
+
+  convList.forEach(c => {
+    const id = c.agent_id;
+    if (!id || knownIds.has(id)) return;
+    if (!discovered.has(id)) {
+      const name = c.agent_name || `Unknown (${id})`;
+      discovered.set(id, name);
+    } else if (discovered.get(id).startsWith('Unknown') && c.agent_name) {
+      discovered.set(id, c.agent_name);
+    }
+  });
+
+  if (discovered.size === 0) return;
+
+  discovered.forEach((name, id) => {
+    agents.push({ agent_id: id, name, _unknown: true });
+    knownIds.add(id);
+    // selectedAgentIds = EXCLUDED list, so to SELECT a ghost agent
+    // we must ensure its ID is NOT in selectedAgentIds
+    const idx = selectedAgentIds.indexOf(id);
+    if (idx !== -1) selectedAgentIds.splice(idx, 1);
+  });
+
+  // Re-render the agent dropdown to include the new entries
+  renderAgentOptions(agents, id => !selectedAgentIds.includes(id));
+  updateAgentTriggerText();
+}
+
+function clearAgentSearch(event) {
+  event.stopPropagation();
+  const input = document.getElementById('agentSearch');
+  input.value = '';
+  applyVisibleFilter();
+  input.focus();
+}
+
+function setStatus() { /* status indicator removed */ }
+
+function cancelLoad() {
+  loadCancelled = true;
+  stopLoadTimer();
+  setTableEmpty('Load cancelled');
+  setStatus('Cancelled', false);
+}
+
+async function loadConversations() {
+  const fromDate = document.getElementById('dateFrom').value;
+  const toDate = document.getElementById('dateTo').value;
+
+  // Fresh load — clear any loaded search context
+  activeSessionName = null;
+  loadedFileHandle  = null;
+  updateSessionBanner();
+  updateSaveSearchBtn();
+
+  // Switch to Detail tab so user sees progress
+  switchTab('detail');
+
+  loadCancelled = false;
+  setStatus('Loading...', true);
+  setTableLoading('Starting…');
+
+  const fromTs = fromDate ? Math.floor(new Date(fromDate + 'T00:00:00').getTime() / 1000) : null;
+  const toTs = toDate ? Math.floor(new Date(toDate + 'T23:59:59').getTime() / 1000) : null;
+
+  try {
+    const includeUnknown = document.getElementById('includeUnknownAgents')?.checked;
+
+    // Strip any ghost agents from a previous load before building knownAgentIds,
+    // so they don't get falsely treated as "known" and filtered from the unknown pass.
+    agents = agents.filter(a => !a._unknown);
+    selectedAgentIds = selectedAgentIds.filter(id => agents.some(a => a.agent_id === id));
+    const knownAgentIds = new Set(agents.map(a => a.agent_id));
+
+    let agentsToQuery;
+    if (selectedAgentIds.length === 0) {
+      agentsToQuery = [null]; // no filter — all agents
+    } else {
+      agentsToQuery = agents
+        .filter(a => !selectedAgentIds.includes(a.agent_id))
+        .map(a => a.agent_id);
+      if (agentsToQuery.length === 0 && !includeUnknown) {
+        showNotification('No agents selected — please check at least one agent', 'error');
+        setTableEmpty('No agents selected');
+        setStatus('Idle', false);
+        return;
+      }
+      // Add a no-filter pass to capture unknown agents if requested
+      if (includeUnknown) agentsToQuery.push(null);
+    }
+
+    console.log('[Load] agentsToQuery:', agentsToQuery);
+    console.log('[Load] knownAgentIds count:', knownAgentIds.size);
+    console.log('[Load] includeUnknown:', includeUnknown);
+
+    let all = [];
+    let agentsDone = 0;
+    for (const agentId of agentsToQuery) {
+      if (loadCancelled) return;
+      const agentName = agentId ? (agents.find(a => a.agent_id === agentId)?.name || agentId) : 'all agents';
+      let cursor = null;
+      let hasMore = true;
+      while (hasMore) {
+        if (loadCancelled) return;
+        let url = '/v1/convai/conversations?page_size=100';
+        if (agentId) url += `&agent_id=${agentId}`;
+        if (fromTs) url += `&call_start_after_unix=${fromTs}`;
+        if (toTs) url += `&call_start_before_unix=${toTs}`;
+        if (cursor) url += `&cursor=${cursor}`;
+
+        const data = await apiGet(url);
+        let convs = data.conversations || [];
+
+        // For the unfiltered (unknown agents) pass, keep ONLY conversations whose
+        // agent_id is not in the full known agents roster.
+        if (!agentId && includeUnknown) {
+          const before = convs.length;
+          convs = convs.filter(c => !c.agent_id || !knownAgentIds.has(c.agent_id));
+          console.log(`[Unknown pass] page raw=${before} after-filter=${convs.length}`,
+            convs.slice(0, 5).map(c => ({ id: c.conversation_id, agent_id: c.agent_id, agent_name: c.agent_name }))
+          );
+        }
+
+        convs.forEach(c => {
+          if (!c.agent_name && agentId) {
+            const agent = agents.find(a => a.agent_id === agentId);
+            if (agent) c.agent_name = agent.name;
+          }
+        });
+        all = all.concat(convs);
+        cursor = data.next_cursor;
+        hasMore = !!cursor && convs.length > 0;
+
+        const fetchPct = agentsToQuery.length > 1
+          ? Math.round((agentsDone / agentsToQuery.length) * 50)
+          : 25;
+        setLoadingStatus(`Fetching ${agentName} — ${all.length} conversations…`, fetchPct);
+        setStatus(`Fetching… ${all.length} conversations`, true);
+      }
+      agentsDone++;
+    }
+
+    if (loadCancelled) return;
+
+    // Deduplicate by conversation_id.
+    // Conversations with null/missing IDs are always kept (each gets a unique synthetic key).
+    let nullIdSeq = 0;
+    const seen = new Set();
+    allConversations = all.filter(c => {
+      const key = c.conversation_id != null ? c.conversation_id : `__null_${nullIdSeq++}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      // Ensure null-ID conversations have a stable synthetic ID for rendering
+      if (c.conversation_id == null) c._synthetic_id = key;
+      return true;
+    });
+
+    allConversations.sort((a, b) => (b.start_time_unix_secs || 0) - (a.start_time_unix_secs || 0));
+    filteredConversations = [...allConversations];
+    currentPage = 1;
+
+    setLoadingStatus(`Fetched ${allConversations.length} conversations — loading details…`, 50);
+    setStatus(`Enriching metadata…`, true);
+
+    // Add any agent IDs found in conversations that aren't in the known agents list
+    discoverUnknownAgents(allConversations);
+
+    // Show a notification about what was found so user can verify
+    if (includeUnknown) {
+      const unknownConvs = allConversations.filter(c => c.agent_id && !new Set(originalAgents.map(a => a.agent_id)).has(c.agent_id));
+      const noIdConvs    = allConversations.filter(c => !c.agent_id);
+      showNotification(
+        `Unknown agents: ${unknownConvs.length} conv(s) from unrecognised agents, ${noIdConvs.length} with no agent ID`,
+        unknownConvs.length + noIdConvs.length > 0 ? 'success' : 'warning'
+      );
+      console.log('[Unknown] unrecognised agent convs:', unknownConvs.slice(0,5).map(c => ({ agent_id: c.agent_id, agent_name: c.agent_name })));
+    }
+
+    if (allConversations.length > 0) {
+      await enrichMetadata();
+    } else {
+      setTableEmpty('No conversations found');
+      setStatus('Loaded — 0 conversations', false);
+    }
+
+  } catch(e) {
+    if (loadCancelled) return;
+    setStatus('Error', false);
+    showNotification('Failed to load: ' + e.message, 'error');
+    setTableEmpty('Failed to load conversations: ' + e.message);
+  }
+}
+
+// Fetch individual conversation details to populate metadata.cost (Call Credits),
+// metadata.charging.llm_charge (LLM Credits), and metadata.charging.llm_price (LLM Total).
+// Runs in batches of 5 concurrent requests. Renders table + stats only when fully complete.
+async function enrichMetadata() {
+  const BATCH = 5;
+  const total = allConversations.length;
+  let done = 0;
+
+  for (let i = 0; i < total; i += BATCH) {
+    if (loadCancelled) return;
+    const batch = allConversations.slice(i, i + BATCH);
+    await Promise.all(batch.map(async conv => {
+      if (!conv.conversation_id) return; // no detail endpoint for null-ID conversations
+      try {
+        const detail = await apiGet(`/v1/convai/conversations/${conv.conversation_id}`);
+        if (detail.metadata)   conv.metadata   = detail.metadata;
+        if (detail.transcript) conv.transcript  = detail.transcript;
+        if (detail.analysis)   conv.analysis    = detail.analysis;
+        // Back-fill agent_name from detail when list left it blank
+        if (!conv.agent_name && detail.agent_name) conv.agent_name = detail.agent_name;
+      } catch { /* skip on error */ }
+    }));
+    done = Math.min(i + BATCH, total);
+    const pct = 50 + Math.round((done / total) * 50);
+    setLoadingStatus(`Loading details… ${done} / ${total}`, pct);
+    setStatus(`Enriching ${done}/${total}…`, true);
+  }
+
+  // All done — sync filtered list, render, and calculate stats
+  // Use _synthetic_id as fallback key for null-ID conversations
+  const convById = new Map(allConversations.map(c => [c.conversation_id ?? c._synthetic_id, c]));
+  filteredConversations = filteredConversations.map(fc => {
+    return convById.get(fc.conversation_id ?? fc._synthetic_id) || fc;
+  });
+
+  renderTable();
+  updateStats(filteredConversations);
+  if (document.getElementById('panelSummary').classList.contains('active')) renderSummary();
+  stopLoadTimer();
+  setStatus(`Loaded ${total} conversations`, false);
+}
+
+let loadTimerInterval = null;
+let loadTimerStart    = null;
+
+function startLoadTimer() {
+  stopLoadTimer();
+  loadTimerStart = Date.now();
+  loadTimerInterval = setInterval(() => {
+    const el = document.getElementById('loadTimerDisplay');
+    if (!el) { stopLoadTimer(); return; }
+    const elapsed = Math.floor((Date.now() - loadTimerStart) / 1000);
+    const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const ss = String(elapsed % 60).padStart(2, '0');
+    el.textContent = `${mm}:${ss}`;
+  }, 1000);
+}
+
+function stopLoadTimer() {
+  if (loadTimerInterval) { clearInterval(loadTimerInterval); loadTimerInterval = null; }
+}
+
+function setTableLoading(statusText) {
+  document.getElementById('tableContent').innerHTML = `
+    <div class="loading" id="loadingState">
+      <div class="loading-spinner-wrap"><div class="spinner"></div></div>
+      <div class="loading-title">Loading Conversations</div>
+      <div class="loading-status" id="loadingStatusLine">${statusText || 'Fetching data…'}</div>
+      <div class="loading-progress-bar"><div class="loading-progress-fill" id="loadingProgressFill"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;font-variant-numeric:tabular-nums;">
+        Load time: <span id="loadTimerDisplay" style="font-weight:700;color:var(--accent);">00:00</span>
+      </div>
+      <button class="cancel-load-btn" onclick="cancelLoad()" title="Cancel loading">✕ Cancel</button>
+    </div>`;
+  document.getElementById('paginationBar').style.display = 'none';
+  startLoadTimer();
+}
+
+function setLoadingStatus(text, progressPct) {
+  const line = document.getElementById('loadingStatusLine');
+  const fill = document.getElementById('loadingProgressFill');
+  if (line) line.textContent = text;
+  if (fill && progressPct != null) fill.style.width = Math.min(progressPct, 100) + '%';
+}
+
+function setSelectBtnVisibility(visible) {
+  const selectBtn = document.getElementById('selectModeBtn');
+  const saveBtn   = document.getElementById('saveSearchBtn');
+  if (selectBtn) selectBtn.style.display = visible ? '' : 'none';
+  if (saveBtn)   saveBtn.style.display   = visible ? '' : 'none';
+  // If hiding while select mode is active, cancel it
+  if (!visible && document.body.classList.contains('select-mode')) {
+    toggleSelectMode();
+  }
+}
+
+function setTableEmpty(msg) {
+  setSelectBtnVisibility(false);
+  document.getElementById('tableContent').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <h3>${msg || 'No conversations found'}</h3>
+      <p>Try adjusting your date range or agent selection</p>
+    </div>`;
+  document.getElementById('paginationBar').style.display = 'none';
+  document.getElementById('resultCount').textContent = '';
+}
+
+function updateStats(src) {
+  const filtered = src || allConversations;
+  const total = allConversations.length;
+  const filteredCount = filtered.length;
+
+  // Conversations count
+  document.getElementById('statTotal').textContent = filteredCount;
+  const subEl = document.getElementById('statTotalSub');
+  if (subEl) {
+    subEl.textContent = filteredCount !== total ? `of ${total} total` : '';
+  }
+
+  // Duration values
+  const durations = filtered.map(c => c.call_duration_secs).filter(v => v != null);
+  const totalDurationSecs = durations.reduce((a, b) => a + b, 0);
+  const avgDur = durations.length ? Math.round(totalDurationSecs / durations.length) : 0;
+  document.getElementById('statTotalDuration').textContent = totalDurationSecs ? fmtDuration(totalDurationSecs) : '—';
+  document.getElementById('statAvgDuration').textContent = avgDur ? fmtDuration(avgDur) : '—';
+
+  // Total LLM Cost — sum metadata.charging.llm_price (6 decimal places)
+  const llmCost = filtered.reduce((a, c) => a + (Number(c.metadata?.charging?.llm_price) || 0), 0);
+  document.getElementById('statLLM').textContent = '$' + llmCost.toFixed(4);
+
+  // Total Agent Cost = ($0.065 * total duration in minutes) + Total LLM Cost
+  const totalDurationMins = totalDurationSecs / 60;
+  const agentCost = (0.065 * totalDurationMins) + llmCost;
+  document.getElementById('statAgentCost').textContent = '$' + agentCost.toFixed(2);
+
+  // Total Messages
+  const msgs = filtered.reduce((a, c) => a + (c.message_count || 0), 0);
+  document.getElementById('statMessages').textContent = msgs.toLocaleString();
+
+  // Total Call Credits — sum metadata.cost (whole number, 0 decimals)
+  const callCredits = filtered.reduce((a, c) => a + (Number(c.metadata?.cost) || 0), 0);
+  document.getElementById('statCost').textContent = Math.round(callCredits).toLocaleString();
+
+  // Total LLM Credits — sum metadata.charging.llm_charge (whole number, 0 decimals)
+  const llmCredits = filtered.reduce((a, c) => a + (Number(c.metadata?.charging?.llm_charge) || 0), 0);
+  document.getElementById('statCredits').textContent = Math.round(llmCredits).toLocaleString();
+
+  // ── Row 2: Average stats (always shown with row 1) ───────────────────────
+  const count = filtered.length;
+
+  // Avg Duration
+  const totalDurSecs = durations.reduce((a, b) => a + b, 0);
+  const avgDurSecs   = count && durations.length ? totalDurSecs / durations.length : 0;
+  document.getElementById('statAvgDurRow2').textContent = avgDurSecs ? fmtDuration(Math.round(avgDurSecs)) : '—';
+
+  // Avg LLM $
+  const llmCostVals  = filtered.map(c => c.metadata?.charging?.llm_price).filter(v => v != null).map(Number);
+  const totalLLMCost = llmCostVals.reduce((a, b) => a + b, 0);
+  const avgLLMCost   = llmCostVals.length ? totalLLMCost / llmCostVals.length : null;
+  document.getElementById('statAvgLLMCost').textContent = avgLLMCost != null ? '$' + avgLLMCost.toFixed(4) : '—';
+
+  // Avg Messages
+  const msgVals  = filtered.map(c => c.message_count).filter(v => v != null);
+  const avgMsgs  = msgVals.length ? msgVals.reduce((a, b) => a + b, 0) / msgVals.length : null;
+  document.getElementById('statAvgMessages').textContent = avgMsgs != null ? avgMsgs.toFixed(1) : '—';
+
+  // Avg LLM $/Min
+  const totalDurMins = totalDurSecs / 60;
+  const avgLLMPerMin = (totalDurMins > 0 && totalLLMCost > 0) ? totalLLMCost / totalDurMins : null;
+  document.getElementById('statAvgLLMPerMin').textContent = avgLLMPerMin != null ? '$' + avgLLMPerMin.toFixed(4) : '—';
+
+  // Always show both stat rows
+  document.getElementById('headerStats').style.display    = 'flex';
+  document.getElementById('headerStatsRow2').style.display = 'flex';
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  applyFilters();
+}
+
+function clearFilterDates() {
+  document.getElementById('filterFrom').value = '';
+  document.getElementById('filterTo').value   = '';
+  applyFilters();
+}
+
+// Unified filter: text search + date range, compounded
+function applyFilters() {
+  const q        = document.getElementById('searchInput').value.toLowerCase().trim();
+  const fromVal  = document.getElementById('filterFrom')?.value;
+  const toVal    = document.getElementById('filterTo')?.value;
+  const clearBtn = document.getElementById('searchClear');
+  if (clearBtn) clearBtn.classList.toggle('visible', q.length > 0);
+
+  const fromTs = fromVal ? Math.floor(new Date(fromVal + 'T00:00:00').getTime() / 1000) : null;
+  const toTs   = toVal   ? Math.floor(new Date(toVal   + 'T23:59:59').getTime() / 1000) : null;
+
+  filteredConversations = allConversations.filter(c => {
+    // Text filter
+    if (q) {
+      const matchesText = COLS.some(col => {
+        const raw = c[col.key];
+        const formatted = col.fmt(raw, c);
+        return (String(raw || '').toLowerCase().includes(q) ||
+                String(formatted || '').toLowerCase().includes(q));
+      }) || (c.conversation_id || '').toLowerCase().includes(q)
+        || (c.agent_name || '').toLowerCase().includes(q);
+      if (!matchesText) return false;
+    }
+    // Date range filter
+    const ts = c.start_time_unix_secs;
+    if (fromTs && ts < fromTs) return false;
+    if (toTs   && ts > toTs)   return false;
+    return true;
+  });
+
+  currentPage = 1;
+  if (allConversations.length > 0) updateStats(filteredConversations);
+  renderTable();
+  if (document.getElementById('panelSummary').classList.contains('active')) renderSummary();
+
+  // Update filter row result count
+  const rowCount = document.getElementById('filterRowCount');
+  if (rowCount) {
+    const active = (q || fromVal || toVal);
+    rowCount.textContent = active
+      ? `${filteredConversations.length.toLocaleString()} of ${allConversations.length.toLocaleString()} shown`
+      : '';
+  }
+}
+
+// Legacy alias so any existing callers still work
+function filterTable() { applyFilters(); }
+
+function sortTable(colIdx) {
+  if (sortCol === colIdx) sortDir *= -1;
+  else { sortCol = colIdx; sortDir = -1; }
+
+  const col = COLS[colIdx];
+  filteredConversations.sort((a, b) => {
+    const av = col.sortVal ? col.sortVal(a) : a[col.key];
+    const bv = col.sortVal ? col.sortVal(b) : b[col.key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'number') return (av - bv) * sortDir;
+    return String(av).localeCompare(String(bv)) * sortDir;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  if (filteredConversations.length === 0) {
+    setTableEmpty();
+    return;
+  }
+  setSelectBtnVisibility(true);
+
+  const total = filteredConversations.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageData = filteredConversations.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('resultCount').textContent = `${total} result${total !== 1 ? 's' : ''}`;
+
+  let html = `<table><thead><tr>
+    <th class="sel-cell"><input type="checkbox" id="selAllChk" title="Select all on page" onchange="toggleSelectAll(this)"></th>
+    <th class="play-col"></th>`;
+  COLS.forEach((col, i) => {
+    const sorted = sortCol === i ? 'sorted' : '';
+    const icon = sortCol === i ? (sortDir === 1 ? '▲' : '▼') : '▲▼';
+    const tipBadge = col.tip ? `<span class="th-tip" data-tip="${col.tip.replace(/"/g, '&quot;')}">?</span>` : '';
+    html += `<th class="${sorted}" onclick="sortTable(${i})"><span class="th-wrap">${col.label}${tipBadge}<span class="sort-icon">${icon}</span></span></th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  pageData.forEach(c => {
+    const convId     = c.conversation_id || '';
+    const rowKey     = convId || c._synthetic_id || '';
+    const convIdSafe = convId.replace(/'/g, "\\'");
+    const hasAudio   = c.has_audio !== false && (c.call_duration_secs > 0);
+    const playTitle  = hasAudio ? 'Play conversation audio' : 'No audio — conversation duration is 0';
+    const isSelected = selectedConvIds.has(rowKey);
+    html += `<tr${isSelected ? ' class="row-selected"' : ''}>`;
+    html += `<td class="sel-cell"><input type="checkbox" class="row-chk" data-id="${rowKey}" ${isSelected ? 'checked' : ''} onchange="toggleRowSelect(this)"></td>`;
+    html += `<td class="play-cell"><button class="play-btn${hasAudio ? '' : ' no-audio'}" id="pbtn_${rowKey}" ${hasAudio && convId ? `onclick="playConversation('${convIdSafe}', this)"` : 'disabled'} title="${hasAudio && convId ? playTitle : (convId ? playTitle : 'No conversation ID — audio unavailable')}">${hasAudio && convId ? '▶' : '⊘'}</button></td>`;
+    COLS.forEach((col, i) => {
+      const raw = c[col.key];
+      const val = col.fmt(raw, c);
+      if (col.key === 'conversation_id') {
+        if (convId) {
+          html += `<td class="conv-id-cell" onclick="copyConvId('${convIdSafe}', event)" title="Click the Conversation ID to copy">${val}<span class="copy-hint">⎘</span></td>`;
+        } else {
+          html += `<td class="conv-id-cell" style="color:var(--text3);font-style:italic;" title="No conversation ID">—</td>`;
+        }
+      } else {
+        const cls = [i === 1 ? 'primary' : '', col.yellow ? 'col-yellow' : ''].filter(Boolean).join(' ');
+        html += `<td class="${cls}">${val}</td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById('tableContent').innerHTML = html;
+
+  // Pagination
+  const pgBar = document.getElementById('paginationBar');
+  if (totalPages <= 1) {
+    pgBar.style.display = 'none';
+  } else {
+    pgBar.style.display = 'flex';
+    let pgHtml = `<div class="pagination">
+      <span>Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}</span>
+      <div class="pagination-btns">
+        <button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+
+    const range = pageRange(currentPage, totalPages);
+    range.forEach(p => {
+      if (p === '...') pgHtml += `<span class="page-btn" style="cursor:default;">…</span>`;
+      else pgHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    });
+
+    pgHtml += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      </div></div>`;
+    pgBar.innerHTML = pgHtml;
+  }
+}
+
+function pageRange(current, total) {
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = [1];
+  if (current > 3) pages.push('...');
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(filteredConversations.length / PAGE_SIZE);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTable();
+  // Scroll the table content area to top — don't use scrollIntoView which moves the whole page
+  const tableScroll = document.getElementById('tableContent');
+  if (tableScroll) tableScroll.scrollTop = 0;
+}
+
+function copyConvId(id, e) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(id).then(() => {
+    showNotification('ID Copied', 'success', 3000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = id;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showNotification('ID Copied', 'success', 3000);
+  });
+}
+
+// CSV Popup
+function toggleCsvPopup(e) {
+  e.stopPropagation();
+  if (allConversations.length === 0) {
+    showNotification('No conversations to download', 'error');
+    return;
+  }
+  const popup = document.getElementById('csvPopup');
+  popup.classList.toggle('open');
+}
+
+function closeCsvPopup() {
+  document.getElementById('csvPopup').classList.remove('open');
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', e => {
+  const wrapper = document.getElementById('csvPopupWrapper');
+  if (wrapper && !wrapper.contains(e.target)) closeCsvPopup();
+});
+
+// Detail CSV — exports columns shown in the Detail tab list view
+function downloadBasicCSV() {
+  closeCsvPopup();
+  const src = (filteredConversations.length > 0 ? filteredConversations : allConversations).slice();
+
+  const escape = v => {
+    if (v == null) return '';
+    const s = String(v).replace(/"/g, '""');
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+  };
+
+  // Sort by DVA Agent (agent_name asc) then Date & Time (start_time_unix_secs asc)
+  src.sort((a, b) => {
+    const na = (a.agent_name || a.agent_id || '').toLowerCase();
+    const nb = (b.agent_name || b.agent_id || '').toLowerCase();
+    if (na < nb) return -1;
+    if (na > nb) return 1;
+    return (a.start_time_unix_secs || 0) - (b.start_time_unix_secs || 0);
+  });
+
+  // Use COLS but rename 'LLM' → 'LLM Used' in export label
+  const headers = COLS.map(col => col.label === 'LLM' ? 'LLM Used' : col.label);
+  let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+
+  // Per-conversation total agent cost
+  const calcAgentCost = c => {
+    const dur = c.call_duration_secs || 0;
+    const llm = Number(c.metadata?.charging?.llm_price) || 0;
+    return (0.065 * (dur / 60)) + llm;
+  };
+
+  src.forEach(c => {
+    const row = COLS.map(col => escape(col.fmt(c[col.key], c)));
+    csv += row.join(',') + '\n';
+  });
+
+  // Totals row
+  const totals = COLS.map(col => {
+    if (col.key === 'agent_name' || col.key === 'conversation_id') return escape(col.key === 'agent_name' ? 'TOTAL' : '');
+    if (col.key === 'start_time_unix_secs') return '';
+    if (col.key === 'call_duration_secs') return escape(fmtDuration(src.reduce((s, c) => s + (c.call_duration_secs || 0), 0)));
+    if (col.key === '_dur_mins') return escape(fmtDurMins(src.reduce((s, c) => s + (c.call_duration_secs || 0), 0)));
+    if (col.key === 'message_count') return escape(src.reduce((s, c) => s + (c.message_count || 0), 0));
+    if (col.key === '_call_credits') return escape(Math.round(src.reduce((s, c) => s + (Number(c.metadata?.cost) || 0), 0)));
+    if (col.key === '_llm_credits') return escape(Math.round(src.reduce((s, c) => s + (Number(c.metadata?.charging?.llm_charge) || 0), 0)));
+    if (col.key === '_llm_total') return escape('$' + src.reduce((s, c) => s + (Number(c.metadata?.charging?.llm_price) || 0), 0).toFixed(4));
+    if (col.key === '_llm_model') return '';
+    return '';
+  });
+  csv += totals.join(',') + '\n';
+
+  triggerDownload(csv, `elevenlabs-detail_${dateRangeStr()}.csv`);
+  showNotification(`Downloaded ${src.length} rows (Detail CSV)`, 'success');
+}
+
+// Summary CSV — exports agent-aggregated rows matching the Summary tab
+function downloadFullCSV() {
+  closeCsvPopup();
+  const src = filteredConversations.length > 0 ? filteredConversations : allConversations;
+
+  const escape = v => {
+    if (v == null) return '';
+    const s = String(v).replace(/"/g, '""');
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+  };
+
+  // Aggregate by agent — use _synthetic_id as last-resort key so null-ID convs don't collapse
+  const agentMap = {};
+  src.forEach(c => {
+    const key  = c.agent_id || c._synthetic_id || 'unknown';
+    const name = c.agent_name || c.agent_id || 'Unknown Agent';
+    if (!agentMap[key]) agentMap[key] = { name, conversations: 0, totalDurationSecs: 0, messages: 0, callCredits: 0, llmCredits: 0, llmCost: 0 };
+    const a = agentMap[key];
+    a.conversations++;
+    a.totalDurationSecs += c.call_duration_secs || 0;
+    a.messages += c.message_count || 0;
+    a.callCredits += Number(c.metadata?.cost) || 0;
+    a.llmCredits += Number(c.metadata?.charging?.llm_charge) || 0;
+    a.llmCost += Number(c.metadata?.charging?.llm_price) || 0;
+  });
+
+  // Sort by DVA Agent name ascending
+  const rows = Object.values(agentMap).sort((a, b) =>
+    String(a.name || '').toLowerCase().localeCompare(String(b.name || '').toLowerCase())
+  );
+
+  const headers = ['"DVA Agent"','"Conversations"','"Dur Hours"','"Dur Min"','"Messages"','"Call Credits"','"LLM Credits"','"LLM Total"','"Total Agent Cost"'];
+  let csv = headers.join(',') + '\n';
+  rows.forEach(a => {
+    const agentCost = (0.065 * (a.totalDurationSecs / 60)) + a.llmCost;
+    csv += [
+      escape(a.name),
+      escape(a.conversations),
+      escape(fmtDuration(a.totalDurationSecs)),
+      escape(fmtDurMins(a.totalDurationSecs)),
+      escape(a.messages),
+      escape(Math.round(a.callCredits)),
+      escape(Math.round(a.llmCredits)),
+      escape('$' + a.llmCost.toFixed(4)),
+      escape('$' + agentCost.toFixed(2)),
+    ].join(',') + '\n';
+  });
+
+  // Totals row
+  const tot = { conversations: 0, totalDurationSecs: 0, messages: 0, callCredits: 0, llmCredits: 0, llmCost: 0 };
+  rows.forEach(a => { tot.conversations += a.conversations; tot.totalDurationSecs += a.totalDurationSecs; tot.messages += a.messages; tot.callCredits += a.callCredits; tot.llmCredits += a.llmCredits; tot.llmCost += a.llmCost; });
+  const totAgent = (0.065 * (tot.totalDurationSecs / 60)) + tot.llmCost;
+  csv += [
+    '"TOTAL"',
+    tot.conversations,
+    escape(fmtDuration(tot.totalDurationSecs)),
+    escape(fmtDurMins(tot.totalDurationSecs)),
+    tot.messages,
+    Math.round(tot.callCredits),
+    Math.round(tot.llmCredits),
+    `"$${tot.llmCost.toFixed(4)}"`,
+    `"$${totAgent.toFixed(2)}"`,
+  ].join(',') + '\n';
+
+  triggerDownload(csv, `elevenlabs-summary_${dateRangeStr()}.csv`);
+  showNotification(`Downloaded ${rows.length} agent rows (Summary CSV)`, 'success');
+}
+
+function triggerDownload(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Returns date range string for CSV filenames: MM-DD-YYYY_MM-DD-YYYY
+function dateRangeStr() {
+  const fmt = str => {
+    if (!str) return 'unknown';
+    const [y, m, d] = str.split('-');
+    return `${m}-${d}-${y}`;
+  };
+  const from = document.getElementById('dateFrom')?.value || '';
+  const to   = document.getElementById('dateTo')?.value   || '';
+  return `${fmt(from)}_${fmt(to)}`;
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = isLight ? '🌙 Dark mode?' : '☀️ Light mode?';
+  try { localStorage.setItem('elTheme', isLight ? 'light' : 'dark'); } catch(e) {}
+}
+
+// ── CONFIG MODAL ─────────────────────────────────────────────────────────────
+function openConfig() {
+  // Pre-fill with current values
+  document.getElementById('cfgAppName').value = APP_NAME;
+  document.getElementById('cfgPassword').value = '';
+  document.getElementById('cfgApiKey').value = API_KEY;
+  // Pre-fill theme
+  const currentTheme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+  document.getElementById('cfgTheme').value = currentTheme;
+  // Show current save folder if one is selected
+  const dirInput = document.getElementById('cfgSaveDir');
+  const dirHint  = document.getElementById('cfgSaveDirHint');
+  if (savedirHandle) {
+    dirInput.value = savedirHandle.name;
+    dirHint.textContent = `✅ Searches save into "${savedirHandle.name}" and config auto-saves there.`;
+  } else {
+    const hint = (() => { try { return localStorage.getItem('elFolderName'); } catch(e) { return null; } })();
+    dirInput.value = hint ? `${hint} (not connected this session)` : '';
+    dirHint.textContent = 'Choose a folder to save searches and config directly to disk (Chrome/Edge only). You will need to re-grant access each session.';
+  }
+  document.getElementById('cfgOverlay').classList.add('open');
+}
+
+function closeConfig() {
+  document.getElementById('cfgOverlay').classList.remove('open');
+  // Reset reveal state so fields default to hidden next time
+  ['cfgPassword','cfgApiKey'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.type = 'password';
+  });
+}
+
+function toggleCfgReveal(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+async function saveConfig() {
+  const newName     = document.getElementById('cfgAppName').value.trim();
+  const newPassword = document.getElementById('cfgPassword').value;
+  const newApiKey   = document.getElementById('cfgApiKey').value.trim();
+  const newTheme    = document.getElementById('cfgTheme').value; // 'light' or 'dark'
+
+  // Validate
+  if (!newName) { alert('App name cannot be empty.'); return; }
+  if (newPassword && newPassword.length < 6) { alert('Password must be at least 6 characters.'); return; }
+  if (!newApiKey) { alert('API key cannot be empty.'); return; }
+
+  // Apply app name
+  if (newName !== APP_NAME) {
+    APP_NAME = newName;
+    const h1 = document.querySelector('header h1');
+    if (h1) h1.textContent = newName;
+    document.title = newName;
+    try { localStorage.setItem('elAppName', newName); } catch(e) {}
+  }
+
+  // Apply password (only if filled in)
+  if (newPassword) {
+    APP_PASSWORD = newPassword;
+    try { localStorage.setItem('elAppPassword', newPassword); } catch(e) {}
+  }
+
+  // Apply API key
+  if (newApiKey !== API_KEY) {
+    API_KEY = newApiKey;
+    try { localStorage.setItem('elApiKey', newApiKey); } catch(e) {}
+  }
+
+  // Apply theme
+  const isLight = newTheme === 'light';
+  document.documentElement.classList.toggle('light', isLight);
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) themeBtn.textContent = isLight ? '🌙 Dark mode?' : '☀️ Light mode?';
+  try { localStorage.setItem('elTheme', newTheme); } catch(e) {}
+
+  closeConfig();
+  showNotification('Configuration saved', 'success');
+
+  // Auto-write config file to save folder if configured
+  if (savedirHandle) {
+    try {
+      await writeConfigToFolder(savedirHandle);
+      showNotification(`Config saved to "${savedirHandle.name}/elevenlabs-config.json"`, 'success');
+    } catch(e) {
+      console.warn('Could not write config to folder:', e);
+    }
+  }
+}
+
+// ── SESSION MANAGEMENT ────────────────────────────────────────────────────────
+// Searches are saved as .json files on disk. Loading picks a file from disk.
+let activeSessionName = null;
+let loadedFileHandle  = null;  // FileSystemFileHandle of the currently loaded search (if from dir)
+let savedirHandle = null;   // FileSystemDirectoryHandle (File System Access API, Chrome/Edge only)
+
+// ── Directory picker (File System Access API) ─────────────────────────────────
+async function pickSaveDir() {
+  if (!window.showDirectoryPicker) {
+    document.getElementById('cfgSaveDir').value = '';
+    document.getElementById('cfgSaveDirHint').textContent =
+      'Your browser does not support folder selection (Chrome/Edge required). Files will always go to Downloads.';
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    savedirHandle = handle;
+    document.getElementById('cfgSaveDir').value = handle.name;
+    document.getElementById('cfgSaveDirHint').textContent =
+      `✅ Save Search will write files directly into "${handle.name}". This preference lasts for this session.`;
+
+    // Try to auto-load config from folder
+    try {
+      const cfgHandle = await handle.getFileHandle('elevenlabs-config.json', { create: false });
+      const cfgFile   = await cfgHandle.getFile();
+      const cfgData   = JSON.parse(await cfgFile.text());
+      applyConfigData(cfgData);
+      showNotification(`Config loaded from "${handle.name}/elevenlabs-config.json"`, 'success');
+    } catch(e) {
+      // No config file in folder — that's fine
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      document.getElementById('cfgSaveDirHint').textContent = `Error: ${e.message}`;
+    }
+  }
+}
+
+// Write current settings as elevenlabs-config.json into a directory handle
+async function writeConfigToFolder(dirHandle) {
+  const theme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+  const cfg = {
+    _version: 2,
+    _saved:   new Date().toISOString(),
+    appName:  APP_NAME,
+    password: APP_PASSWORD,
+    apiKey:   API_KEY,
+    theme:    theme,
+    folderName: dirHandle.name
+  };
+  const fileHandle = await dirHandle.getFileHandle('elevenlabs-config.json', { create: true });
+  const writable   = await fileHandle.createWritable();
+  await writable.write(JSON.stringify(cfg, null, 2));
+  await writable.close();
+}
+
+// Apply a parsed config object (shared by import and folder auto-load)
+function applyConfigData(data) {
+  if (typeof data.appName === 'string' && data.appName) {
+    APP_NAME = data.appName;
+    const h1 = document.querySelector('header h1');
+    if (h1) h1.textContent = APP_NAME;
+    document.title = APP_NAME;
+    try { localStorage.setItem('elAppName', APP_NAME); } catch(e) {}
+  }
+  if (typeof data.password === 'string' && data.password.length >= 6) {
+    APP_PASSWORD = data.password;
+    try { localStorage.setItem('elAppPassword', APP_PASSWORD); } catch(e) {}
+  }
+  if (typeof data.apiKey === 'string' && data.apiKey) {
+    API_KEY = data.apiKey;
+    try { localStorage.setItem('elApiKey', API_KEY); } catch(e) {}
+  }
+  // Apply theme
+  if (data.theme === 'light' || data.theme === 'dark') {
+    const isLight = data.theme === 'light';
+    document.documentElement.classList.toggle('light', isLight);
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) themeBtn.textContent = isLight ? '🌙 Dark mode?' : '☀️ Light mode?';
+    try { localStorage.setItem('elTheme', data.theme); } catch(e) {}
+    // Sync config modal theme select if open
+    const cfgTheme = document.getElementById('cfgTheme');
+    if (cfgTheme) cfgTheme.value = data.theme;
+  }
+  // Store folder name hint in localStorage so we can prompt re-grant after reload
+  if (typeof data.folderName === 'string' && data.folderName) {
+    try { localStorage.setItem('elFolderName', data.folderName); } catch(e) {}
+  }
+  // Refresh config modal fields if open
+  const overlay = document.getElementById('cfgOverlay');
+  if (overlay && overlay.classList.contains('open')) {
+    document.getElementById('cfgAppName').value = APP_NAME;
+    document.getElementById('cfgApiKey').value  = API_KEY;
+  }
+}
+
+// ── Save: download a JSON file (or write to picked folder) ────────────────────
+function openSaveSession() {
+  if (!allConversations.length) {
+    showNotification('Nothing to save — load conversations first', 'warning');
+    return;
+  }
+  const isUpdate = !!activeSessionName;
+  document.getElementById('sessNameInput').value = activeSessionName || '';
+  document.getElementById('saveModalTitle').textContent = isUpdate ? '🔄 Update Search' : '💾 Save Search';
+  document.getElementById('saveModalDesc').innerHTML = isUpdate
+    ? `Updating <strong>${escHtml(activeSessionName)}</strong>. Change the name to save as a new file instead.`
+    : 'Saves the current conversation list and filters as a <strong>.json</strong> file you can reload anytime.';
+  document.getElementById('saveModalBtn').textContent = isUpdate ? '🔄 Update' : '⬇ Save JSON';
+  document.getElementById('saveSessionOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('sessNameInput').focus(), 80);
+}
+function closeSaveSession() {
+  document.getElementById('saveSessionOverlay').classList.remove('open');
+}
+
+// Build a large JSON Blob in chunks to avoid freezing UI on huge conversation arrays
+async function buildSearchBlob(name) {
+  const header = {
+    searchName: name,
+    savedAt: new Date().toISOString(),
+    appVersion: document.getElementById('versionBadge')?.textContent || '',
+    filters: {
+      dateFrom:         document.getElementById('dateFrom').value,
+      dateTo:           document.getElementById('dateTo').value,
+      searchQuery:      document.getElementById('searchInput').value,
+      selectedAgentIds: [...selectedAgentIds],
+      sortCol,
+      sortDir,
+    },
+  };
+  // Build conversations array in chunks of 200 to avoid blocking
+  const CHUNK = 200;
+  const parts = [JSON.stringify(header).slice(0, -1) + ',\n  "conversations": [\n'];
+  for (let i = 0; i < allConversations.length; i += CHUNK) {
+    const chunk = allConversations.slice(i, i + CHUNK);
+    const isLast = (i + CHUNK) >= allConversations.length;
+    const chunkStr = chunk.map(c => '    ' + JSON.stringify(c)).join(',\n');
+    parts.push(chunkStr + (isLast ? '\n  ]\n}' : ',\n'));
+    // Yield to browser every chunk
+    await new Promise(r => setTimeout(r, 0));
+  }
+  return new Blob(parts, { type: 'application/json' });
+}
+
+function setSaveModalStatus(text, busy) {
+  let el = document.getElementById('saveModalStatus');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'saveModalStatus';
+    el.style.cssText = 'font-size:12px;color:var(--accent);font-weight:600;min-height:16px;text-align:center;';
+    document.getElementById('saveModalBtn').parentElement.after(el);
+  }
+  el.textContent = text;
+  document.getElementById('saveModalBtn').disabled = busy;
+  document.getElementById('saveModalBtn').style.opacity = busy ? '0.5' : '';
+  const cancelBtn = document.querySelector('#saveSessionOverlay .sess-close-btn');
+  if (cancelBtn) cancelBtn.disabled = busy;
+}
+
+async function doSaveSession() {
+  const name = document.getElementById('sessNameInput').value.trim();
+  if (!name) { document.getElementById('sessNameInput').focus(); return; }
+
+  const isUpdate    = !!(activeSessionName && name === activeSessionName);
+  const safe        = name.replace(/[^a-z0-9_\-]/gi, '_');
+  const ts          = new Date().toISOString().slice(0,10);
+  const filename    = isUpdate && loadedFileHandle ? loadedFileHandle.name : `${safe}_${ts}.json`;
+
+  // Confirm before overwriting existing file
+  if (isUpdate && loadedFileHandle) {
+    const confirmed = await showConfirmDialog(
+      `Overwrite "${loadedFileHandle.name}"?`,
+      `This will replace the existing file with the current search data.`
+    );
+    if (!confirmed) return;
+  }
+
+  setSaveModalStatus('⏳ Serialising data…', true);
+  let blob;
+  try {
+    blob = await buildSearchBlob(name);
+  } catch(e) {
+    setSaveModalStatus(`Error: ${e.message}`, false);
+    return;
+  }
+
+  // If updating and we have the original file handle, overwrite in place
+  if (isUpdate && loadedFileHandle) {
+    setSaveModalStatus('💾 Writing file…', true);
+    try {
+      const writable = await loadedFileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      setSaveModalStatus('', false);
+      activeSessionName = name;
+      updateSessionBanner();
+      updateSaveSearchBtn();
+      closeSaveSession();
+      showNotification(`Search "${name}" updated`, 'success');
+      return;
+    } catch(e) {
+      setSaveModalStatus(`Write failed: ${e.message}`, false);
+      showNotification(`In-place update failed (${e.message}) — saving as new file`, 'warning');
+    }
+  }
+
+  // Attempt to write into the picked folder (Chrome/Edge)
+  if (savedirHandle) {
+    setSaveModalStatus('💾 Writing to folder…', true);
+    try {
+      const fileHandle = await savedirHandle.getFileHandle(filename, { create: true });
+      const writable   = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      setSaveModalStatus('', false);
+      activeSessionName = name;
+      loadedFileHandle  = fileHandle;
+      updateSessionBanner();
+      updateSaveSearchBtn();
+      closeSaveSession();
+      showNotification(`Search "${name}" saved to "${savedirHandle.name}/${filename}"`, 'success');
+      return;
+    } catch(e) {
+      setSaveModalStatus('', false);
+      showNotification(`Folder write failed (${e.message}) — falling back to download`, 'warning');
+    }
+  }
+
+  // Fallback: browser download
+  setSaveModalStatus('⬇ Preparing download…', true);
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href    = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+
+  setSaveModalStatus('', false);
+  activeSessionName = name;
+  loadedFileHandle  = null;
+  updateSessionBanner();
+  updateSaveSearchBtn();
+  closeSaveSession();
+  showNotification(`Search "${name}" saved as ${filename}`, 'success');
+}
+
+// Simple promise-based confirm dialog (reuses cfg-overlay styling)
+function showConfirmDialog(title, message) {
+  return new Promise(resolve => {
+    let el = document.getElementById('confirmDialogOverlay');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'confirmDialogOverlay';
+      el.className = 'cfg-overlay';
+      el.style.zIndex = '9900';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = `
+      <div class="cfg-box" style="max-width:380px;">
+        <div class="cfg-title" style="font-size:14px;">${escHtml(title)}</div>
+        <p style="font-size:12px;color:var(--text2);margin:0;">${escHtml(message)}</p>
+        <div class="cfg-actions">
+          <button class="cfg-cancel-btn" id="confirmNo">Cancel</button>
+          <button class="cfg-save-btn" id="confirmYes" style="background:var(--danger);border-color:var(--danger);">Yes</button>
+        </div>
+      </div>`;
+    el.style.display = 'flex';
+    el.querySelector('#confirmYes').onclick = () => { el.style.display = 'none'; resolve(true); };
+    el.querySelector('#confirmNo').onclick  = () => { el.style.display = 'none'; resolve(false); };
+  });
+}
+
+// ── Load: import from JSON file(s) ───────────────────────────────────────────
+function openLoadSession() {
+  if (savedirHandle) {
+    openLoadFromDir();
+  } else {
+    openLoadFilePicker();
+  }
+}
+
+function closeDirLoadModal() {
+  document.getElementById('dirLoadOverlay').classList.remove('open');
+}
+
+async function openLoadFromDir() {
+  try {
+    const files = [];
+    for await (const [name, handle] of savedirHandle.entries()) {
+      if (handle.kind === 'file' && name.endsWith('.json') && name !== 'elevenlabs-config.json') {
+        files.push({ name, handle });
+      }
+    }
+    if (!files.length) {
+      showNotification(`No .json files found in "${savedirHandle.name}" — pick a file manually`, 'info');
+      openLoadFilePicker();
+      return;
+    }
+    files.sort((a, b) => b.name.localeCompare(a.name));
+    renderDirLoadModal(files);
+  } catch(e) {
+    showNotification(`Could not read folder: ${e.message}`, 'error');
+    openLoadFilePicker();
+  }
+}
+
+function renderDirLoadModal(files) {
+  const list = document.getElementById('dirLoadList');
+  list._fileHandles = files;
+  list.innerHTML = files.map((f, i) =>
+    `<div class="sess-item" id="dirFile_${i}" style="cursor:pointer;" onclick="toggleDirItem(${i})">
+      <label style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer;" onclick="event.stopPropagation();toggleDirItem(${i})">
+        <input type="checkbox" id="dirChk_${i}" onclick="event.stopPropagation();toggleDirItem(${i})" style="cursor:pointer;flex-shrink:0;">
+        <span class="sess-item-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name)}</span>
+      </label>
+    </div>`
+  ).join('');
+  updateDirSelCount();
+  document.getElementById('dirLoadOverlay').classList.add('open');
+}
+
+function toggleDirItem(i) {
+  const chk = document.getElementById(`dirChk_${i}`);
+  if (!chk) return;
+  chk.checked = !chk.checked;
+  const item = document.getElementById(`dirFile_${i}`);
+  if (item) item.style.background = chk.checked ? 'var(--accent-glow)' : '';
+  updateDirSelCount();
+}
+
+function toggleDirSelectAll(masterChk) {
+  const list = document.getElementById('dirLoadList');
+  if (!list._fileHandles) return;
+  list._fileHandles.forEach((_, i) => {
+    const chk = document.getElementById(`dirChk_${i}`);
+    const item = document.getElementById(`dirFile_${i}`);
+    if (chk) { chk.checked = masterChk.checked; }
+    if (item) item.style.background = masterChk.checked ? 'var(--accent-glow)' : '';
+  });
+  updateDirSelCount();
+}
+
+function clearDirSelections() {
+  const list = document.getElementById('dirLoadList');
+  if (!list._fileHandles) return;
+  list._fileHandles.forEach((_, i) => {
+    const chk = document.getElementById(`dirChk_${i}`);
+    const item = document.getElementById(`dirFile_${i}`);
+    if (chk) chk.checked = false;
+    if (item) item.style.background = '';
+  });
+  const master = document.getElementById('dirSelectAll');
+  if (master) master.checked = false;
+  updateDirSelCount();
+}
+
+function updateDirSelCount() {
+  const list = document.getElementById('dirLoadList');
+  const count = list._fileHandles
+    ? list._fileHandles.filter((_, i) => document.getElementById(`dirChk_${i}`)?.checked).length
+    : 0;
+  const countEl   = document.getElementById('dirSelCount');
+  const loadBtn   = document.getElementById('dirLoadBtn');
+  const deleteBtn = document.getElementById('dirDeleteBtn');
+  if (countEl)   countEl.textContent  = `${count} selected`;
+  if (loadBtn)   { loadBtn.disabled   = count === 0; loadBtn.style.opacity   = count === 0 ? '0.4' : ''; }
+  if (deleteBtn) { deleteBtn.disabled = count === 0; deleteBtn.style.opacity = count === 0 ? '0.4' : ''; }
+}
+
+async function deleteSelectedDirFiles() {
+  const list = document.getElementById('dirLoadList');
+  if (!list._fileHandles) return;
+  const selected = list._fileHandles
+    .map((f, i) => ({ ...f, i }))
+    .filter(({ i }) => document.getElementById(`dirChk_${i}`)?.checked);
+  if (!selected.length) return;
+
+  const names = selected.map(f => f.name).join('\n• ');
+  const confirmed = await showConfirmDialog(
+    `Delete ${selected.length} file${selected.length > 1 ? 's' : ''}?`,
+    `This will permanently delete:\n• ${names}`
+  );
+  if (!confirmed) return;
+
+  let deleted = 0;
+  for (const { handle, name } of selected) {
+    try {
+      await savedirHandle.removeEntry(name);
+      deleted++;
+    } catch(e) {
+      showNotification(`Could not delete "${name}": ${e.message}`, 'error');
+    }
+  }
+  if (deleted > 0) {
+    showNotification(`Deleted ${deleted} file${deleted > 1 ? 's' : ''}`, 'success');
+    // Refresh the modal list
+    await openLoadFromDir();
+  }
+}
+
+async function loadSelectedDirFiles() {
+  const list = document.getElementById('dirLoadList');
+  if (!list._fileHandles) return;
+  const selected = list._fileHandles.filter((_, i) => document.getElementById(`dirChk_${i}`)?.checked);
+  if (!selected.length) return;
+
+  closeDirLoadModal();
+
+  // Clear existing list before merging
+  allConversations      = [];
+  filteredConversations = [];
+  currentPage           = 1;
+
+  let mergedConvs = [];
+  let mergedNames = [];
+  let lastHandle  = null;
+
+  for (const { handle } of selected) {
+    try {
+      const file = await handle.getFile();
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!Array.isArray(data.conversations)) continue;
+      mergedConvs = mergedConvs.concat(data.conversations);
+      mergedNames.push(data.searchName || data.sessionName || handle.name.replace(/\.json$/i, ''));
+      lastHandle  = handle;
+    } catch(e) {
+      showNotification(`Could not load "${handle.name}": ${e.message}`, 'error');
+    }
+  }
+
+  if (!mergedConvs.length) {
+    showNotification('No conversations found in selected files', 'warning');
+    return;
+  }
+
+  // Deduplicate by conversation_id
+  const seen = new Set();
+  mergedConvs = mergedConvs.filter(c => {
+    if (seen.has(c.conversation_id)) return false;
+    seen.add(c.conversation_id);
+    return true;
+  });
+
+  // If single file, restore filters too; if multiple use shared merge helper
+  const isSingle = selected.length === 1;
+  if (isSingle) {
+    const singleFile = await selected[0].handle.getFile();
+    const singleData = JSON.parse(await singleFile.text());
+    applySessionData(singleData, selected[0].handle.name, selected[0].handle);
+  } else {
+    await mergeAndLoadConversations(mergedConvs, mergedNames, `Merging ${selected.length} search files…`);
+  }
+}
+
+function openLoadFilePicker() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.multiple = true;
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.onchange = async e => {
+    const files = Array.from(e.target.files);
+    document.body.removeChild(input);
+    if (!files.length) return;
+
+    // Clear before loading
+    allConversations      = [];
+    filteredConversations = [];
+    currentPage           = 1;
+
+    if (files.length === 1) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try { applySessionData(JSON.parse(ev.target.result), files[0].name); }
+        catch(err) { showNotification(`Could not parse file: ${err.message}`, 'error'); }
+      };
+      reader.readAsText(files[0]);
+    } else {
+      // Multi-file: merge
+      let mergedConvs = [];
+      let mergedNames = [];
+      for (const file of files) {
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          if (Array.isArray(data.conversations)) {
+            mergedConvs = mergedConvs.concat(data.conversations);
+            mergedNames.push(data.searchName || data.sessionName || file.name.replace(/\.json$/i, ''));
+          }
+        } catch(e) {
+          showNotification(`Could not parse "${file.name}": ${e.message}`, 'error');
+        }
+      }
+      const seen = new Set();
+      mergedConvs = mergedConvs.filter(c => { if (seen.has(c.conversation_id)) return false; seen.add(c.conversation_id); return true; });
+      if (!mergedConvs.length) { showNotification('No conversations found in selected files', 'warning'); return; }
+      await mergeAndLoadConversations(mergedConvs, mergedNames, `Merging ${files.length} search files…`);
+    }
+  };
+  input.click();
+}
+
+// ── Shared helper: chunked progress merge for multi-file loads ────────────────
+async function mergeAndLoadConversations(mergedConvs, mergedNames, label) {
+  const total = mergedConvs.length;
+  switchTab('detail');
+  setTableLoading(label);
+  setLoadingStatus(`Preparing ${total.toLocaleString()} conversations…`, 5);
+  await new Promise(r => setTimeout(r, 0));
+
+  sortCol = 0; sortDir = 1; currentPage = 1;
+  allConversations = [];
+
+  const CHUNK = 500;
+  for (let i = 0; i < total; i += CHUNK) {
+    allConversations = allConversations.concat(mergedConvs.slice(i, i + CHUNK));
+    const pct = Math.round(((i + CHUNK) / total) * 85);
+    setLoadingStatus(`Loading… ${Math.min(i + CHUNK, total).toLocaleString()} / ${total.toLocaleString()}`, pct);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  setLoadingStatus('Applying filters…', 90);
+  await new Promise(r => setTimeout(r, 0));
+  filteredConversations = [...allConversations];
+  applyFilters();
+
+  setLoadingStatus('Calculating stats…', 96);
+  await new Promise(r => setTimeout(r, 0));
+  updateStats(filteredConversations.length ? filteredConversations : allConversations);
+
+  stopLoadTimer();
+  setLoadingStatus('Done', 100);
+  await new Promise(r => setTimeout(r, 80));
+
+  activeSessionName = mergedNames.join(' + ');
+  loadedFileHandle  = null;
+  updateSessionBanner();
+  updateSaveSearchBtn();
+  showNotification(`Merged ${mergedNames.length} files — ${total.toLocaleString()} conversations`, 'success');
+}
+
+async function applySessionData(data, filename, fileHandle = null) {
+  // Validate structure
+  if (!data.conversations || !Array.isArray(data.conversations)) {
+    showNotification('Invalid session file — missing conversations array', 'error');
+    return;
+  }
+
+  const total = data.conversations.length;
+
+  // Show loading screen with timer
+  switchTab('detail');
+  setTableLoading(`Loading search "${data.searchName || filename}"…`);
+  setLoadingStatus(`Preparing ${total.toLocaleString()} conversations…`, 5);
+  await new Promise(r => setTimeout(r, 0)); // yield so DOM updates
+
+  // Restore state from file
+  const f = data.filters || {};
+  selectedAgentIds = Array.isArray(f.selectedAgentIds) ? [...f.selectedAgentIds] : [];
+  sortCol          = f.sortCol ?? 0;
+  sortDir          = f.sortDir ?? 1;
+  currentPage      = 1;
+
+  if (f.dateFrom) document.getElementById('dateFrom').value = f.dateFrom;
+  if (f.dateTo)   document.getElementById('dateTo').value   = f.dateTo;
+
+  const searchEl = document.getElementById('searchInput');
+  if (searchEl) searchEl.value = f.searchQuery || '';
+
+  // Restore agent checkboxes
+  document.querySelectorAll('.agent-option input[type="checkbox"]').forEach(chk => {
+    const id = chk.dataset.agentId || chk.value;
+    chk.checked = selectedAgentIds.includes(id);
+  });
+  updateAgentTriggerText();
+
+  // Load conversations in chunks so progress bar advances
+  const CHUNK = 500;
+  allConversations = [];
+  for (let i = 0; i < total; i += CHUNK) {
+    allConversations = allConversations.concat(data.conversations.slice(i, i + CHUNK));
+    const pct = Math.round(((i + CHUNK) / total) * 90);
+    setLoadingStatus(`Loading… ${Math.min(i + CHUNK, total).toLocaleString()} / ${total.toLocaleString()}`, pct);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  setLoadingStatus('Applying filters…', 92);
+  await new Promise(r => setTimeout(r, 0));
+
+  // Apply compounded filters
+  filteredConversations = [...allConversations];
+  if (f.searchQuery) {
+    applyFilters();
+  } else {
+    filteredConversations = [...allConversations];
+    renderTable();
+  }
+
+  setLoadingStatus('Calculating stats…', 97);
+  await new Promise(r => setTimeout(r, 0));
+
+  updateStats(filteredConversations.length ? filteredConversations : allConversations);
+
+  stopLoadTimer();
+  setLoadingStatus('Done', 100);
+  await new Promise(r => setTimeout(r, 80));
+
+  activeSessionName = data.searchName || data.sessionName || filename;
+  loadedFileHandle  = fileHandle;
+  updateSessionBanner();
+  updateSaveSearchBtn();
+  showNotification(
+    `Search "${activeSessionName}" loaded — ${allConversations.length.toLocaleString()} conversations`,
+    'success'
+  );
+}
+
+function clearSession() {
+  activeSessionName = null;
+  loadedFileHandle  = null;
+  // Clear search and date filter inputs
+  const searchEl = document.getElementById('searchInput');
+  if (searchEl) searchEl.value = '';
+  const searchClear = document.getElementById('searchClear');
+  if (searchClear) searchClear.classList.remove('visible');
+  const filterFrom = document.getElementById('filterFrom');
+  const filterTo   = document.getElementById('filterTo');
+  if (filterFrom) filterFrom.value = '';
+  if (filterTo)   filterTo.value   = '';
+  const filterRowCount = document.getElementById('filterRowCount');
+  if (filterRowCount) filterRowCount.textContent = '';
+  // Clear conversation data and reset the list view
+  allConversations      = [];
+  filteredConversations = [];
+  currentPage           = 1;
+  document.getElementById('resultCount').textContent = '';
+  document.getElementById('headerStats').style.display    = 'none';
+  document.getElementById('headerStatsRow2').style.display = 'none';
+  setTableEmpty('Load conversations to get started');
+  updateSessionBanner();
+  updateSaveSearchBtn();
+}
+
+function updateSessionBanner() {
+  const banner   = document.getElementById('sessActiveBanner');
+  const nameEl   = document.getElementById('sessActiveName');
+  const filterEl = document.getElementById('filterInline');
+  if (activeSessionName) {
+    nameEl.textContent = activeSessionName;
+    banner.classList.add('visible');
+    if (filterEl) filterEl.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+    if (filterEl) filterEl.classList.remove('visible');
+  }
+}
+
+function updateSaveSearchBtn() {
+  const btn = document.getElementById('saveSearchBtn');
+  if (!btn) return;
+  if (activeSessionName) {
+    btn.textContent = '🔄 Update Search';
+    btn.title = 'Update the currently loaded search file';
+  } else {
+    btn.textContent = '💾 Save Search';
+    btn.title = 'Save current search as a JSON file';
+  }
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function logout() {
+  // Show password overlay and clear any previous input/error
+  const overlay = document.getElementById('pwOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwInput').focus();
+}
+
+function showNotification(text, type = 'info', duration = 4000) {
+  const el = document.getElementById('notification');
+  const icon = document.getElementById('notificationIcon');
+  const textEl = document.getElementById('notificationText');
+  el.className = `notification show ${type}`;
+  icon.textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+  textEl.textContent = text;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Toggle header collapse
+function toggleHeader() {
+  const header = document.getElementById('appHeader');
+  const label = document.getElementById('collapseLabel');
+  header.classList.toggle('collapsed');
+  const isCollapsed = header.classList.contains('collapsed');
+  label.textContent = isCollapsed ? 'Expand Header' : 'Collapse Header';
+  try { localStorage.setItem('elHeaderCollapsed', isCollapsed ? '1' : '0'); } catch(e) {}
+}
+
+function toggleSelectMode() {
+  const active = document.body.classList.toggle('select-mode');
+  const btn = document.getElementById('selectModeBtn');
+  btn.classList.toggle('active', active);
+  btn.textContent = active ? '✕ Cancel Select' : '☑ Select Conversations';
+  if (!active) {
+    // Exiting select mode — clear all selections
+    selectedConvIds.clear();
+    renderTable();
+  }
+  updateSelectionBar();
+}
+
+function toggleRowSelect(chk) {
+  const id = chk.dataset.id;
+  const row = chk.closest('tr');
+  if (chk.checked) {
+    selectedConvIds.add(id);
+    row.classList.add('row-selected');
+  } else {
+    selectedConvIds.delete(id);
+    row.classList.remove('row-selected');
+  }
+  // Sync select-all checkbox
+  const pageIds = Array.from(document.querySelectorAll('.row-chk')).map(c => c.dataset.id);
+  const allChecked = pageIds.length > 0 && pageIds.every(pid => selectedConvIds.has(pid));
+  const selAll = document.getElementById('selAllChk');
+  if (selAll) selAll.checked = allChecked;
+  updateSelectionBar();
+}
+
+function toggleSelectAll(chk) {
+  document.querySelectorAll('.row-chk').forEach(rowChk => {
+    const id = rowChk.dataset.id;
+    rowChk.checked = chk.checked;
+    const row = rowChk.closest('tr');
+    if (chk.checked) {
+      selectedConvIds.add(id);
+      row.classList.add('row-selected');
+    } else {
+      selectedConvIds.delete(id);
+      row.classList.remove('row-selected');
+    }
+  });
+  updateSelectionBar();
+}
+
+function clearSelection() {
+  selectedConvIds.clear();
+  document.querySelectorAll('.row-chk').forEach(chk => {
+    chk.checked = false;
+    chk.closest('tr').classList.remove('row-selected');
+  });
+  const selAll = document.getElementById('selAllChk');
+  if (selAll) selAll.checked = false;
+  updateSelectionBar();
+}
+
+function updateSelectionBar() {
+  const bar = document.getElementById('selectionBar');
+  const label = document.getElementById('selectionBarLabel');
+  const dlBtn = document.getElementById('downloadAudioBtn');
+  const count = selectedConvIds.size;
+  const inSelectMode = document.body.classList.contains('select-mode');
+  if (inSelectMode && count > 0) {
+    bar.classList.add('visible');
+    label.textContent = `${count} conversation${count !== 1 ? 's' : ''} selected`;
+    dlBtn.disabled = false;
+  } else {
+    bar.classList.remove('visible');
+    dlBtn.disabled = true;
+  }
+}
+
+async function downloadSelectedAudio() {
+  const ids = Array.from(selectedConvIds);
+  if (!ids.length) return;
+  const btn = document.getElementById('downloadAudioBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Downloading…';
+
+  let done = 0;
+  let failed = 0;
+  for (const convId of ids) {
+    try {
+      btn.textContent = `⏳ ${done + failed + 1}/${ids.length} — fetching…`;
+      const url = `${BASE}/v1/convai/conversations/${convId}/audio`;
+      const resp = await fetch(url, { headers: { 'xi-api-key': API_KEY } });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+
+      const rawBlob = await resp.blob();
+      // Force a proper MIME type — API may return application/octet-stream
+      const mime = (rawBlob.type && rawBlob.type !== 'application/octet-stream')
+        ? rawBlob.type : 'audio/mpeg';
+      const ext = mime.includes('wav') ? 'wav' : mime.includes('ogg') ? 'ogg' : 'mp3';
+      const audioBlob = new Blob([rawBlob], { type: mime });
+
+      // Use blob URL for download — createObjectURL works fine for <a download>
+      // even from file:// (unlike audio playback which needs base64 data URLs)
+      const blobUrl = URL.createObjectURL(audioBlob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${convId}.${ext}`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Give browser time to start the download before revoking
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+      done++;
+      btn.textContent = `⏳ ${done}/${ids.length} done…`;
+      // Small delay between downloads so browser can handle each save dialog
+      if (done + failed < ids.length) await new Promise(r => setTimeout(r, 600));
+    } catch(e) {
+      failed++;
+      showNotification(`Failed to download ${convId}: ${e.message}`, 'error');
+    }
+  }
+
+  btn.textContent = '⬇ Download Audio';
+  btn.disabled = selectedConvIds.size === 0;
+  if (failed === 0) {
+    showNotification(`Downloaded ${done} audio file${done !== 1 ? 's' : ''}`, 'success');
+  } else {
+    showNotification(`${done} downloaded, ${failed} failed`, 'warning');
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('tabDetail').classList.toggle('active', tab === 'detail');
+  document.getElementById('tabSummary').classList.toggle('active', tab === 'summary');
+  document.getElementById('panelDetail').classList.toggle('active', tab === 'detail');
+  document.getElementById('panelSummary').classList.toggle('active', tab === 'summary');
+  if (tab === 'summary') renderSummary();
+}
+
+function renderSummary() {
+  const src = filteredConversations;
+
+  if (src.length === 0) {
+    document.getElementById('summaryContent').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No conversations match the current filter</h3>
+        <p>Load conversations and adjust search/date range to see agent summary</p>
+      </div>`;
+    return;
+  }
+
+  // Group by agent
+  const agentMap = {};
+  src.forEach(c => {
+    const key = c.agent_id || c._synthetic_id || 'unknown';
+    const name = c.agent_name || c.agent_id || 'Unknown Agent';
+    if (!agentMap[key]) {
+      agentMap[key] = {
+        name,
+        conversations: 0,
+        totalDurationSecs: 0,
+        messages: 0,
+        callCredits: 0,
+        llmCredits: 0,
+        llmCost: 0,
+        agentCost: 0,
+      };
+    }
+    const a = agentMap[key];
+    a.conversations++;
+    a.totalDurationSecs += c.call_duration_secs || 0;
+    a.messages += c.message_count || 0;
+    a.callCredits += Number(c.metadata?.cost) || 0;
+    a.llmCredits += Number(c.metadata?.charging?.llm_charge) || 0;
+    a.llmCost += Number(c.metadata?.charging?.llm_price) || 0;
+  });
+
+  // Calculate total agent cost per agent after all convs aggregated
+  Object.values(agentMap).forEach(a => {
+    a.agentCost = (0.065 * (a.totalDurationSecs / 60)) + a.llmCost;
+  });
+
+  const rows = Object.values(agentMap).sort((a, b) => {
+    const av = a[sumSortCol], bv = b[sumSortCol];
+    if (typeof av === 'number') return (av - bv) * sumSortDir;
+    return String(av || '').localeCompare(String(bv || '')) * sumSortDir;
+  });
+
+  let html = `<table class="summary-table"><thead><tr>
+    <th onclick="sortSummary('name',this)">DVA Agent <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('conversations',this)">Conversations <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('totalDurationSecs',this)">Dur Hours <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('totalDurationSecs',this)">Dur Min <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('messages',this)">Messages <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('callCredits',this)">Call Credits <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('llmCredits',this)">LLM Credits <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('llmCost',this)">LLM Total <span class="sort-icon">▲▼</span></th>
+    <th onclick="sortSummary('agentCost',this)">Total Agent Cost <span class="stat-tip" data-tip="formula = ($0.065 × total duration) + LLM Total" style="cursor:default;">?</span> <span class="sort-icon">▲▼</span></th>
+  </tr></thead><tbody>`;
+
+  rows.forEach(a => {
+    html += `<tr>
+      <td class="primary">${escHtml(a.name)}</td>
+      <td>${a.conversations.toLocaleString()}</td>
+      <td class="col-yellow">${fmtDuration(a.totalDurationSecs)}</td>
+      <td class="col-yellow">${fmtDurMins(a.totalDurationSecs)}</td>
+      <td>${a.messages.toLocaleString()}</td>
+      <td class="col-yellow">${Math.round(a.callCredits).toLocaleString()}</td>
+      <td class="col-yellow">${Math.round(a.llmCredits).toLocaleString()}</td>
+      <td class="col-yellow">$${a.llmCost.toFixed(4)}</td>
+      <td class="col-yellow">$${a.agentCost.toFixed(2)}</td>
+    </tr>`;
+  });
+
+  // Totals row
+  const totDur  = rows.reduce((s, a) => s + a.totalDurationSecs, 0);
+  const totMsg  = rows.reduce((s, a) => s + a.messages, 0);
+  const totCC   = rows.reduce((s, a) => s + a.callCredits, 0);
+  const totLC   = rows.reduce((s, a) => s + a.llmCredits, 0);
+  const totLLM  = rows.reduce((s, a) => s + a.llmCost, 0);
+  const totConv = rows.reduce((s, a) => s + a.conversations, 0);
+  const totAgent = rows.reduce((s, a) => s + a.agentCost, 0);
+
+  html += `<tr style="font-weight:700;border-top:2px solid var(--border2);background:var(--bg3);">
+    <td>TOTAL</td>
+    <td>${totConv.toLocaleString()}</td>
+    <td class="col-yellow">${fmtDuration(totDur)}</td>
+    <td class="col-yellow">${fmtDurMins(totDur)}</td>
+    <td>${totMsg.toLocaleString()}</td>
+    <td class="col-yellow">${Math.round(totCC).toLocaleString()}</td>
+    <td class="col-yellow">${Math.round(totLC).toLocaleString()}</td>
+    <td class="col-yellow">$${totLLM.toFixed(4)}</td>
+    <td class="col-yellow">$${totAgent.toFixed(2)}</td>
+  </tr>`;
+
+  html += `</tbody></table>`;
+  document.getElementById('summaryContent').innerHTML = html;
+}
+
+// Summary sort state
+let sumSortCol = 'name', sumSortDir = 1;
+function sortSummary(col, th) {
+  if (sumSortCol === col) sumSortDir *= -1;
+  else { sumSortCol = col; sumSortDir = -1; }
+  renderSummary();
+}
+
+// Password gate
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  const errEl = document.getElementById('pwError');
+  if (val === APP_PASSWORD) {
+    document.getElementById('pwOverlay').style.display = 'none';
+    document.getElementById('pwInput').value = '';
+    errEl.textContent = '';
+    // Show collapse header button now that user is authenticated
+    const collapseBtn = document.getElementById('collapseHeaderBtn');
+    if (collapseBtn) collapseBtn.style.display = '';
+    // Load agents only after successful authentication
+    if (agents.length === 0) loadAgents();
+    // Apply any config from save folder (or prompt to set one)
+    afterLogin();
+  } else {
+    errEl.textContent = 'Incorrect password. Please try again.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+    // Shake animation
+    const box = document.querySelector('.pw-box');
+    box.style.animation = 'none';
+    void box.offsetWidth;
+    box.style.animation = 'pwShake 0.4s ease';
+  }
+}
+
+// Called immediately after successful login.
+// If a save folder has previously been configured, prompt the user to re-grant
+// access (File System Access handles don't persist across page loads), then load
+// the config file from that folder. If no folder has ever been configured, open
+// the config modal so the user can set one.
+async function afterLogin() {
+  const savedFolder = (() => { try { return localStorage.getItem('elFolderName'); } catch(e) { return null; } })();
+
+  if (!window.showDirectoryPicker) {
+    // Browser doesn't support File System Access API — skip folder flow
+    return;
+  }
+
+  if (savedFolder) {
+    // Prompt to re-grant access to the known folder
+    showNotification(`📁 Click to re-open your config folder "${savedFolder}"`, 'info');
+    // Show a small persistent banner asking user to pick the folder
+    const banner = document.createElement('div');
+    banner.id = 'folderGrantBanner';
+    banner.style.cssText = `
+      position:fixed;bottom:80px;right:24px;z-index:8000;
+      background:var(--bg3);border:1px solid var(--accent);border-radius:10px;
+      padding:12px 16px;font-size:13px;color:var(--text);
+      box-shadow:0 4px 24px rgba(0,0,0,0.4);display:flex;flex-direction:column;gap:8px;max-width:320px;
+    `;
+    banner.innerHTML = `
+      <div style="font-weight:700;color:var(--accent);">📁 Config Folder</div>
+      <div style="font-size:12px;color:var(--text2);">Re-open <strong>${escHtml(savedFolder)}</strong> to load your config &amp; saved searches.</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="grantFolderAccess()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">Open Folder</button>
+        <button onclick="document.getElementById('folderGrantBanner')?.remove()" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;">Skip</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+  } else {
+    // No folder ever set — open config modal after a short delay so UI settles
+    setTimeout(() => openConfig(), 300);
+  }
+}
+
+async function grantFolderAccess() {
+  document.getElementById('folderGrantBanner')?.remove();
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    savedirHandle = handle;
+    try { localStorage.setItem('elFolderName', handle.name); } catch(e) {}
+    // Update config modal save dir field if open
+    const dirInput = document.getElementById('cfgSaveDir');
+    const dirHint  = document.getElementById('cfgSaveDirHint');
+    if (dirInput) dirInput.value = handle.name;
+    if (dirHint)  dirHint.textContent = `✅ Folder "${handle.name}" connected. Config and searches will be read from here.`;
+    // Try to load config file from this folder
+    try {
+      const cfgHandle = await handle.getFileHandle('elevenlabs-config.json', { create: false });
+      const cfgFile   = await cfgHandle.getFile();
+      const cfgData   = JSON.parse(await cfgFile.text());
+      applyConfigData(cfgData);
+      showNotification(`✅ Config loaded from "${handle.name}"`, 'success');
+    } catch(e) {
+      showNotification(`📁 Folder "${handle.name}" connected — no config file found yet`, 'info');
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') showNotification('Could not open folder: ' + e.message, 'error');
+  }
+}
+
+
+let audioObj = null;          // current Audio instance
+let audioBlobUrl = null;      // revokable blob URL
+let audioRafId = null;        // requestAnimationFrame id for timeline
+let transcriptData = [];      // transcript entries for current modal
+let lastActiveBubble = -1;    // index of currently highlighted transcript bubble
+let loadCancelled = false;    // cancel flag for loadConversations
+let selectedConvIds = new Set(); // conversation IDs checked in select mode
+
+function fmtAudioTime(secs) {
+  if (isNaN(secs) || !isFinite(secs)) return '0:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+async function playConversation(convId, btn) {
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  // Highlight the row being played, clear any previous
+  document.querySelectorAll('tr.row-playing').forEach(r => r.classList.remove('row-playing'));
+  const row = btn.closest('tr');
+  if (row) row.classList.add('row-playing');
+
+  try {
+    const url = `${BASE}/v1/convai/conversations/${convId}/audio`;
+    const res = await fetch(url, { headers: { 'xi-api-key': API_KEY } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+
+    const rawBlob = await res.blob();
+    // Force MIME type — server may return application/octet-stream
+    const mimeType = (rawBlob.type && rawBlob.type !== 'application/octet-stream')
+      ? rawBlob.type : 'audio/mpeg';
+
+    // Use base64 data URL instead of blob URL — blob URLs break when the page
+    // is opened from the filesystem (file://) because the origin is null.
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('FileReader failed'));
+      reader.readAsDataURL(new Blob([rawBlob], { type: mimeType }));
+    });
+
+    // Clean up any previous blob URL
+    if (audioBlobUrl) { URL.revokeObjectURL(audioBlobUrl); audioBlobUrl = null; }
+
+    openAudioModal(convId, dataUrl);
+  } catch (e) {
+    showNotification('Could not load audio: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function openAudioModal(convId, src) {
+  closeAudioModal();
+
+  const conv = allConversations.find(c => c.conversation_id === convId);
+  const agent = conv?.agent_name || convId;
+  const dt = conv ? fmtDateTime(conv.start_time_unix_secs) : '';
+  transcriptData = conv?.transcript || [];
+
+  // Build summary HTML
+  function buildSummaryHTML() {
+    const summary = conv?.analysis?.transcript_summary
+      || conv?.analysis?.summary
+      || conv?.transcript_summary
+      || '';
+    if (!summary) return `<div class="audio-summary-empty">No summary available</div>`;
+    return `<div class="audio-summary-text">${escHtml(summary)}</div>`;
+  }
+
+  // Build transcript HTML — agent and user chat messages only
+  function buildTranscriptHTML() {
+    if (!transcriptData.length) {
+      return `<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0;">No transcript available</div>`;
+    }
+    const msgs = transcriptData.filter(msg => {
+      const role = (msg.role || '').toLowerCase();
+      return role === 'agent' || role === 'user';
+    });
+    if (!msgs.length) {
+      return `<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0;">No transcript available</div>`;
+    }
+    return msgs.map((msg, idx) => {
+      const role = (msg.role || '').toLowerCase();
+      const isAgent = role === 'agent';
+      const text = escHtml(msg.message || '');
+      const timeSecs = msg.time_in_call_secs != null ? msg.time_in_call_secs : null;
+      const timeLabel = timeSecs != null ? fmtAudioTime(timeSecs) : '';
+      const seekAttr = timeSecs != null ? `onclick="seekToTranscript(${timeSecs})"` : '';
+      // Use original index for cbub IDs so RAF sync still works
+      const origIdx = transcriptData.indexOf(msg);
+      return `<div class="chat-bubble-wrap ${isAgent ? 'agent-wrap' : 'user-wrap'}">
+        <div class="chat-bubble ${isAgent ? 'agent' : 'user'}" id="cbub_${origIdx}" ${seekAttr} title="${timeLabel ? 'Jump to ' + timeLabel : ''}">
+          <div class="chat-role">${isAgent ? 'Agent' : 'Caller'}</div>
+          <div>${text}</div>
+          ${timeLabel ? `<div class="chat-time">${timeLabel}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'audio-modal-overlay';
+  overlay.id = 'audioModalOverlay';
+  overlay.innerHTML = `
+    <div class="audio-modal" id="audioModal">
+      <div class="audio-modal-top" style="flex-shrink:0;">
+        <div class="audio-modal-header">
+          <div>
+            <div class="audio-modal-title">🎙 ${escHtml(agent)}</div>
+            <div class="audio-modal-sub">${escHtml(dt)}${conv?.call_duration_secs ? ' · ' + fmtDuration(conv.call_duration_secs) : ''}</div>
+          </div>
+          <button class="audio-modal-close" onclick="closeAudioModal()" title="Close">✕</button>
+        </div>
+
+        <div class="audio-timeline">
+          <div class="audio-time-row">
+            <span id="audCurrent">0:00</span>
+            <span id="audDuration">—:——</span>
+          </div>
+          <div class="audio-timeline-track" id="audTrack">
+            <div class="audio-timeline-bg"></div>
+            <div class="audio-timeline-fill" id="audFill"></div>
+            <input type="range" class="audio-slider" id="audSlider"
+              min="0" max="1000" value="0" step="1"
+              oninput="seekAudio(this.value)" onchange="seekAudio(this.value)">
+          </div>
+        </div>
+
+        <div class="audio-controls">
+          <button class="audio-btn primary" id="audPlayBtn" onclick="toggleAudioPlay()" title="Play / Pause">▶</button>
+          <button class="audio-btn" onclick="stopAudio()" title="Stop">⏹</button>
+          <div class="audio-volume-wrap">
+            <button class="audio-btn" id="audVolBtn" onclick="toggleMute()" title="Toggle mute" style="min-width:36px;font-size:13px;">🔊</button>
+            <input type="range" class="audio-volume-slider" id="audVolSlider"
+              min="0" max="100" value="80" oninput="setVolume(this.value)">
+          </div>
+        </div>
+      </div>
+
+      <div class="audio-summary">
+        <div class="audio-summary-heading">Summary</div>
+        ${buildSummaryHTML()}
+      </div>
+
+      <div class="audio-transcript" id="audTranscript">
+        <div class="audio-transcript-heading">Transcript</div>
+        ${buildTranscriptHTML()}
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeAudioModal(); });
+  document.addEventListener('keydown', handleAudioKey);
+
+  audioObj = new Audio();
+  audioObj.preload = 'auto';
+  audioObj.volume = 0.8;
+
+  audioObj.addEventListener('loadedmetadata', () => {
+    const dur = audioObj.duration;
+    if (isFinite(dur) && dur > 0) {
+      const d = document.getElementById('audDuration');
+      const s = document.getElementById('audSlider');
+      if (d) d.textContent = fmtAudioTime(dur);
+      if (s) s.max = Math.floor(dur * 10);
+    }
+  });
+
+  audioObj.addEventListener('durationchange', () => {
+    const dur = audioObj.duration;
+    if (isFinite(dur) && dur > 0) {
+      const d = document.getElementById('audDuration');
+      const s = document.getElementById('audSlider');
+      if (d) d.textContent = fmtAudioTime(dur);
+      if (s) s.max = Math.floor(dur * 10);
+    }
+  });
+
+  audioObj.addEventListener('ended', () => {
+    const btn = document.getElementById('audPlayBtn');
+    if (btn) btn.textContent = '▶';
+    cancelAnimationFrame(audioRafId);
+    audioRafId = null;
+    const fill = document.getElementById('audFill');
+    const slider = document.getElementById('audSlider');
+    const cur = document.getElementById('audCurrent');
+    if (fill) fill.style.width = '0%';
+    if (slider) slider.value = 0;
+    if (cur) cur.textContent = '0:00';
+  });
+
+  audioObj.addEventListener('error', e => {
+    if (!audioObj) return;
+    const codes = { 1:'ABORTED', 2:'NETWORK', 3:'DECODE', 4:'SRC_NOT_SUPPORTED' };
+    const err = audioObj.error;
+    if (!err) return;
+    const code = codes[err.code] || String(err.code);
+    showNotification(`Audio error: ${code}`, 'error');
+  });
+
+  audioObj.src = src;
+  startAudioRaf();
+}
+
+// Clear every active-bubble highlight in the transcript
+function clearAllBubbles() {
+  document.querySelectorAll('#audTranscript .active-bubble').forEach(el => el.classList.remove('active-bubble'));
+}
+
+function startAudioRaf() {
+  cancelAnimationFrame(audioRafId);
+  audioRafId = null;
+  lastActiveBubble = -1;
+  function tick() {
+    if (!audioObj) return;
+    const dur = audioObj.duration;
+    const cur = audioObj.currentTime;
+    const safeDur = (isFinite(dur) && dur > 0) ? dur : 0;
+    const pct = safeDur ? (cur / safeDur) * 100 : 0;
+
+    const sliderEl = document.getElementById('audSlider');
+    const fillEl = document.getElementById('audFill');
+    const curEl = document.getElementById('audCurrent');
+    const durEl = document.getElementById('audDuration');
+
+    if (sliderEl && safeDur) sliderEl.value = Math.floor(cur * 10);
+    if (fillEl) fillEl.style.width = Math.min(pct, 100) + '%';
+    if (curEl) curEl.textContent = fmtAudioTime(cur);
+    if (durEl && safeDur && durEl.textContent === '—:——') durEl.textContent = fmtAudioTime(safeDur);
+
+    // Sync active transcript bubble
+    if (transcriptData.length) {
+      let activeIdx = -1;
+      for (let i = transcriptData.length - 1; i >= 0; i--) {
+        const t = transcriptData[i].time_in_call_secs;
+        if (t != null && cur >= t) { activeIdx = i; break; }
+      }
+      if (activeIdx !== lastActiveBubble) {
+        clearAllBubbles();
+        if (activeIdx >= 0) {
+          const next = document.getElementById(`cbub_${activeIdx}`);
+          if (next) {
+            next.classList.add('active-bubble');
+            next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        }
+        lastActiveBubble = activeIdx;
+      }
+    }
+
+    audioRafId = requestAnimationFrame(tick);
+  }
+  audioRafId = requestAnimationFrame(tick);
+}
+
+function seekToTranscript(timeSecs) {
+  if (!audioObj) return;
+  audioObj.currentTime = timeSecs;
+  const slider = document.getElementById('audSlider');
+  if (slider) slider.value = Math.floor(timeSecs * 10);
+  syncTranscriptToTime(timeSecs);
+  if (audioObj.paused) {
+    const promise = audioObj.play();
+    if (promise) promise.then(() => {
+      const btn = document.getElementById('audPlayBtn');
+      if (btn) btn.textContent = '⏸';
+    }).catch(() => {});
+  }
+}
+
+function seekAudio(val) {
+  if (!audioObj) return;
+  const t = val / 10;
+  audioObj.currentTime = t;
+  const dur = audioObj.duration || 1;
+  document.getElementById('audFill').style.width = ((t / dur) * 100) + '%';
+  document.getElementById('audCurrent').textContent = fmtAudioTime(t);
+  // Immediately sync transcript to the seek position
+  syncTranscriptToTime(t);
+  if (!audioObj.paused) startAudioRaf();
+}
+
+// Find and highlight the bubble matching a given playback time, and scroll it into view
+function syncTranscriptToTime(timeSecs) {
+  if (!transcriptData.length) return;
+  let activeIdx = -1;
+  for (let i = transcriptData.length - 1; i >= 0; i--) {
+    const t = transcriptData[i].time_in_call_secs;
+    if (t != null && timeSecs >= t) { activeIdx = i; break; }
+  }
+  clearAllBubbles();
+  lastActiveBubble = activeIdx;
+  if (activeIdx >= 0) {
+    const el = document.getElementById(`cbub_${activeIdx}`);
+    if (el) {
+      el.classList.add('active-bubble');
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+}
+
+function toggleAudioPlay() {
+  if (!audioObj) return;
+  const btn = document.getElementById('audPlayBtn');
+  if (audioObj.paused || audioObj.ended) {
+    const promise = audioObj.play();
+    if (promise !== undefined) {
+      promise.then(() => {
+        if (btn) btn.textContent = '⏸';
+        startAudioRaf();
+      }).catch(err => {
+        console.warn('Audio play failed:', err);
+      });
+    } else {
+      if (btn) btn.textContent = '⏸';
+      startAudioRaf();
+    }
+  } else {
+    audioObj.pause();
+    cancelAnimationFrame(audioRafId);
+    audioRafId = null;
+    if (btn) btn.textContent = '▶';
+  }
+}
+
+function stopAudio() {
+  if (!audioObj) return;
+  audioObj.pause();
+  audioObj.currentTime = 0;
+  cancelAnimationFrame(audioRafId);
+  audioRafId = null;
+  const btn = document.getElementById('audPlayBtn');
+  const fill = document.getElementById('audFill');
+  const slider = document.getElementById('audSlider');
+  const cur = document.getElementById('audCurrent');
+  if (btn) btn.textContent = '▶';
+  if (fill) fill.style.width = '0%';
+  if (slider) slider.value = 0;
+  if (cur) cur.textContent = '0:00';
+}
+
+function setVolume(val) {
+  if (!audioObj) return;
+  const v = val / 100;
+  audioObj.volume = v;
+  audioObj.muted = false;
+  const btn = document.getElementById('audVolBtn');
+  if (btn) btn.textContent = v === 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊';
+}
+
+function toggleMute() {
+  if (!audioObj) return;
+  audioObj.muted = !audioObj.muted;
+  const btn = document.getElementById('audVolBtn');
+  if (btn) btn.textContent = audioObj.muted ? '🔇' : (audioObj.volume < 0.5 ? '🔉' : '🔊');
+}
+
+function handleAudioKey(e) {
+  if (!document.getElementById('audioModalOverlay')) return;
+  if (e.code === 'Space') { e.preventDefault(); toggleAudioPlay(); }
+  if (e.code === 'Escape') closeAudioModal();
+}
+
+function closeAudioModal() {
+  cancelAnimationFrame(audioRafId);
+  audioRafId = null;
+  transcriptData = [];
+  lastActiveBubble = -1;
+  if (audioObj) { audioObj.pause(); audioObj.src = ''; audioObj = null; }
+  if (audioBlobUrl) { URL.revokeObjectURL(audioBlobUrl); audioBlobUrl = null; }
+  document.removeEventListener('keydown', handleAudioKey);
+  const el = document.getElementById('audioModalOverlay');
+  if (el) el.remove();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Init
+// Apply saved settings from localStorage
+(function() {
+  // Theme (default: light)
+  let saved = 'light';
+  try { saved = localStorage.getItem('elTheme') || 'light'; } catch(e) {}
+  const isLight = saved !== 'dark';
+  document.documentElement.classList.toggle('light', isLight);
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) themeBtn.textContent = isLight ? '🌙 Dark mode?' : '☀️ Light mode?';
+
+  // App name
+  try {
+    const savedName = localStorage.getItem('elAppName');
+    if (savedName) {
+      APP_NAME = savedName;
+      const h1 = document.querySelector('header h1');
+      if (h1) h1.textContent = savedName;
+      document.title = savedName;
+    }
+  } catch(e) {}
+
+  // Password
+  try {
+    const savedPw = localStorage.getItem('elAppPassword');
+    if (savedPw) APP_PASSWORD = savedPw;
+  } catch(e) {}
+
+  // API key
+  try {
+    const savedKey = localStorage.getItem('elApiKey');
+    if (savedKey) API_KEY = savedKey;
+  } catch(e) {}
+
+  // Header collapsed state
+  try {
+    if (localStorage.getItem('elHeaderCollapsed') === '1') {
+      const header = document.getElementById('appHeader');
+      const label = document.getElementById('collapseLabel');
+      if (header) header.classList.add('collapsed');
+      if (label) label.textContent = 'Expand Header';
+    }
+    // Restore Include Unknown Agents checkbox
+    const unknownPref = document.getElementById('includeUnknownAgents');
+    if (unknownPref) unknownPref.checked = localStorage.getItem('elIncludeUnknown') === '1';
+  } catch(e) {}
+
+  // If opened directly as file://, show the CORS warning screen before the login form
+  if (window.location.protocol === 'file:') {
+    const cors = document.getElementById('corsBlockScreen');
+    const login = document.getElementById('pwLoginScreen');
+    if (cors)  cors.style.display  = '';
+    if (login) login.style.display = 'none';
+  }
+
+  // Stats row2 (averages) always starts hidden — it's meaningless before data loads.
+  // localStorage preference is intentionally NOT restored here; the user can expand
+  // it after conversations are loaded.
+})();
+// Note: loadAgents() is called from checkPassword() after successful authentication
+</script>
+<!-- Save / Update Search Modal -->
+<div class="sess-overlay" id="saveSessionOverlay" onclick="if(event.target===this)closeSaveSession()">
+  <div class="sess-box">
+    <div class="sess-title" id="saveModalTitle">💾 Save Search</div>
+    <p style="font-size:12px;color:var(--text3);margin:0;" id="saveModalDesc">Saves the current conversation list and filters as a <strong>.json</strong> file you can reload anytime.</p>
+    <div class="sess-save-row">
+      <input class="sess-name-input" id="sessNameInput" type="text" placeholder="Search name…" maxlength="80"
+        onkeydown="if(event.key==='Enter')doSaveSession()">
+      <button class="sess-do-save-btn" id="saveModalBtn" onclick="doSaveSession()">⬇ Save JSON</button>
+    </div>
+    <button class="sess-close-btn" onclick="closeSaveSession()">Cancel</button>
+  </div>
+</div>
+
+<!-- Dir Load Modal - multi-select -->
+<div class="sess-overlay" id="dirLoadOverlay" onclick="if(event.target===this)closeDirLoadModal()">
+  <div class="sess-box" style="width:560px;">
+    <div class="sess-title">📂 Load Search</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="dirSelectAll" onchange="toggleDirSelectAll(this)"> Select all
+      </label>
+      <button class="cfg-cancel-btn" style="padding:3px 10px;font-size:11px;" onclick="clearDirSelections()">✕ Clear</button>
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;" id="dirSelCount">0 selected</span>
+      <button class="cfg-cancel-btn" style="padding:3px 10px;font-size:11px;" onclick="closeDirLoadModal();openLoadFilePicker()">📁 Pick file…</button>
+    </div>
+    <div class="sess-list" id="dirLoadList" style="max-height:340px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;">
+      <button class="sess-close-btn" onclick="closeDirLoadModal()">Cancel</button>
+      <button class="cfg-cancel-btn" id="dirDeleteBtn" onclick="deleteSelectedDirFiles()" disabled style="opacity:0.4;color:var(--danger,#e05);border-color:var(--danger,#e05);">🗑 Delete Selected</button>
+      <button class="sess-do-save-btn" id="dirLoadBtn" onclick="loadSelectedDirFiles()" disabled style="opacity:0.4;">Load Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- Config Modal -->
+<div class="cfg-overlay" id="cfgOverlay" onclick="if(event.target===this)closeConfig()">
+  <div class="cfg-box">
+    <div class="cfg-title">⚙️ App Configuration</div>
+
+    <div class="cfg-section">
+      <label class="cfg-label">App Name</label>
+      <input class="cfg-input" id="cfgAppName" type="text" placeholder="e.g. Elevenlabs Conversations Review" maxlength="60">
+      <span class="cfg-hint">Displayed in the header and browser title</span>
+    </div>
+
+    <div class="cfg-section">
+      <label class="cfg-label">Theme</label>
+      <select class="cfg-input" id="cfgTheme" style="cursor:pointer;">
+        <option value="dark">🌙 Dark</option>
+        <option value="light">☀️ Light</option>
+      </select>
+      <span class="cfg-hint">Saved to config file and restored on next login</span>
+    </div>
+
+    <div class="cfg-section">
+      <label class="cfg-label">Login Password</label>
+      <div class="cfg-field-wrap">
+        <input class="cfg-input" id="cfgPassword" type="password" placeholder="Leave blank to keep current password" autocomplete="new-password">
+        <button class="cfg-reveal-btn" type="button" onclick="toggleCfgReveal('cfgPassword',this)" title="Show/hide">👁</button>
+      </div>
+      <span class="cfg-hint">Minimum 6 characters. Leave blank to keep unchanged.</span>
+    </div>
+
+    <div class="cfg-section">
+      <label class="cfg-label">ElevenLabs API Key</label>
+      <div class="cfg-field-wrap">
+        <input class="cfg-input" id="cfgApiKey" type="password" placeholder="xi-api-key…" autocomplete="off">
+        <button class="cfg-reveal-btn" type="button" onclick="toggleCfgReveal('cfgApiKey',this)" title="Show/hide">👁</button>
+      </div>
+      <span class="cfg-hint">Your ElevenLabs API key. Stored in localStorage and config file.</span>
+    </div>
+
+    <div class="cfg-section">
+      <label class="cfg-label">Search Save Location</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="cfg-input" id="cfgSaveDir" type="text" placeholder="No folder selected — using browser Downloads" readonly style="flex:1;cursor:default;color:var(--text2);">
+        <button class="cfg-cancel-btn" onclick="pickSaveDir()" title="Choose a folder" style="white-space:nowrap;flex-shrink:0;">📁 Choose Folder</button>
+      </div>
+      <span class="cfg-hint" id="cfgSaveDirHint">
+        Choose a folder to save searches and config directly to disk (Chrome/Edge only). You will need to re-grant access each session.
+      </span>
+    </div>
+
+    <div class="cfg-actions">
+      <button class="cfg-cancel-btn" onclick="closeConfig()">Cancel</button>
+      <button class="cfg-save-btn" onclick="saveConfig()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
